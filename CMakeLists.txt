@@ -52,5 +52,5 @@ install(TARGETS qats qatsClient
 
 install(FILES ${INC_LIST} DESTINATION include)
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons" DESTINATION resources)
-install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/qats.qs" DESTINATION resources)
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/qats.js" DESTINATION resources)
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources/cmake/" DESTINATION cmake)

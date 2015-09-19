@@ -103,7 +103,7 @@ void MainWindow::on__loadScripts_clicked()
 
 	// display script use case
 	QDir scriptDir( dir );
-	foreach( QString scriptFileName, scriptDir.entryList( QStringList() << "*.qs" ) )
+	foreach( QString scriptFileName, scriptDir.entryList( QStringList() << "*.js" ) )
 	{
 		QStandardItem* item = new QStandardItem( scriptFileName );
 		item->setData( scriptDir.absoluteFilePath( scriptFileName ) );				
@@ -119,7 +119,7 @@ void MainWindow::executeTest( const QString& test )
 {
 	QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
-	out << QApplication::applicationDirPath() + "/../resources/qats.qs";
+	out << QApplication::applicationDirPath() + "/../resources/qats.js";
     out << test;
 
 	Server::get()->send( block );
