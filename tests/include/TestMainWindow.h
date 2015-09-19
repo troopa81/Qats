@@ -26,7 +26,7 @@
 #include <QMainWindow>
 #include <QStandardItemModel>
 
-#include "Qats.h"
+#include <Qats.h>
 
 namespace Ui
 {

@@ -20,11 +20,9 @@
 ##
 ############################################################################
 
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 3.2.2)
 
 project(qats)
-
-option(BUILD_TESTS "Build tests" OFF)
 
 find_package(Qt5Widgets)
 find_package(Qt5Test)
@@ -53,8 +51,6 @@ install(TARGETS qats qatsClient
   LIBRARY DESTINATION lib)
 
 install(FILES ${INC_LIST} DESTINATION include)
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources/" DESTINATION resources)
-
-if (${BUILD_TESTS})
-  add_subdirectory ("${CMAKE_SOURCE_DIR}/tests")
-endif()
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons" DESTINATION resources)
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/qats.qs" DESTINATION resources)
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources/cmake/" DESTINATION cmake)

@@ -22,27 +22,14 @@
 
 cmake_minimum_required (VERSION 3.2.2)
 
-project(qatsTests)
+find_path(QATS_INCLUDE_DIR NAMES Qats.h)
 
-find_package(Qats REQUIRED)
-find_package(Qt5Widgets)
-find_package(Qt5Test)
-find_package(Qt5Script)
+find_library(QATS_LIBRARY NAMES qatsClient )
 
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(QATS_LIBRARIES ${QATS_LIBRARY} )
+set(QATS_INCLUDE_DIRS ${QATS_INCLUDE_DIR} )
 
-file(GLOB CPP_LIST "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
-file(GLOB UI_LIST  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.ui")
-file(GLOB INC_LIST "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(Qats DEFAULT_MSG QATS_LIBRARY QATS_INCLUDE_DIR)
 
-include_directories(${QATS_INCLUDE_DIRS})
-link_libraries(${QATS_LIBRARIES})
-
-# app
-add_executable(qatsTests ${CPP_LIST} ${INC_LIST})
-target_include_directories(qatsTests PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
-qt5_use_modules(qatsTests Widgets Test Script Network)
-
-install(TARGETS qatsTests RUNTIME DESTINATION bin)
+mark_as_advanced(QATS_INCLUDE_DIR QATS_LIBRARY )
