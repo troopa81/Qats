@@ -21,6 +21,7 @@
 ############################################################################
 
 * list TODO
+** V0.1
 *** TODO toString
 	Add toString methods for prototypes to allow a good print for some objects
 	(example : QRect, QPoint). Try to reused code used for QDebug display 
@@ -29,4 +30,43 @@
 	et some problems may happen when methods have default value for example.
 *** TODO private 
 	Make qats.js methods with underscore in javascript private style
-	
+*** TODO Logo
+	Design a logo. two cat, one red (failed), one gree (succeeded)
+*** TODO command line
+	Start qats in command line to trigger on or several testcase from several files
+*** TODO Fatal
+	Detect when the tested application has exited (seg fault). Restart application to 
+	launch other test (with option)
+*** TODO Start tested program
+	Add possibility to start the tested application.
+*** TODO XML output
+	Write XML output in xUnit format
+*** TODO Output widget
+	don't clear widget every time, just update its content.
+*** TODO Display list client
+	display a client list to choose which one to use if several
+*** TODO Detect opened client
+	When starting Qats, detect already opened client, to trigger test without relaunching tested
+	application
+*** TODO Configuration
+	Save settings : layout, tested application, delay, all options
+*** TODO javascrit arguments
+	arguments can take object or string for same arguments. use typeoff to determine what we have
+*** TODO Documentation
+	Add documentation to javascript and C++, generate with Doxygen and put it on GitHub
+*** TODO Version
+	Add versionning system
+*** TODO Windows
+	Test on Windows 
+*** TODO JS Module
+	Separate different Qats JS function in module
+*** TODO C++ Module
+	Make some different module for client, server, qt bindings, and generated part
+*** TODO Import file
+	Be sure we can import file a js file from tests
+*** TODO Checkbox state
+	add a method for changing checbox state
+*** TODO ComboBox with string
+	find string in comboBox before selecting it
+*** TODO TableView
+	add function to edit TableView
