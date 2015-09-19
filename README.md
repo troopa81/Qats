@@ -7,19 +7,25 @@ application, in order to easily and rapidely write end to end tests.
 Qats works actually with Qt 5.2. It's a new born project, so be indulgent :)
 
 # Build Qats
-Follow the instructions to build Qats 
+Follow the instructions to build Qats
+```shell 
 $ git clone https://github.com/troopa81/Qats.git
 $ cd Qats
 $ mkdir build
 $ cd build
 $ cmake .. 
 $ make install
+```
 
 If you want to install in a specifc directory, add this to cmake options 
+```shell
 -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR
+```
 
 If you want to build with a specific Qt directory, add this to cmake options
+```shell
 -DCMAKE_PREFIX_PATH="$QT_DIR"
+```
 
 # Build Qats tests
 from Qats root directory...
@@ -30,7 +36,7 @@ $ cmake ../tests
 If you want to use a specific Qt directory and custom Qats install, add this to cmake
 -DCMAKE_PREFIX_PATH="$QT_DIR;$INSTALL_DIR"
 
-# start Qats tests
+# Start Qats tests
 First, check that your lib directory is in ld path. If not :
 $ export LD_LIBRARY_PATH=$INSTALL_DIR:$LD_LIBRARY_PATH
 $ qats&
