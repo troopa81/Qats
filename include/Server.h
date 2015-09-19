@@ -1,0 +1,73 @@
+/****************************************************************************
+**
+** Copyright (C) 2015 Cabieces Julien
+** Contact: https://github.com/troopa81/Qats
+**
+** This file is part of Qats.
+**
+** Qats is free software: you can redistribute it and/or modify
+** it under the terms of the GNU Lesser General Public License as published by
+** the Free Software Foundation, either version 3 of the License, or
+** (at your option) any later version.
+**
+** Qats is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU Lesser General Public License for more details.
+**
+** You should have received a copy of the GNU Lesser General Public License
+** along with Qats. If not, see <http://www.gnu.org/licenses/>.
+**
+****************************************************************************/
+
+#ifndef QATS_SERVER_H
+#define QATS_SERVER_H
+
+#include <QLocalServer>
+
+#include "Qats.h"
+#include "Test.h"
+
+namespace qats
+{
+
+class TestCase;
+class Message;
+class QATS_EXPORT Server : public QLocalServer
+{
+	Q_OBJECT
+
+  public:
+	
+	static Server* get();
+	void send( const QByteArray& message );
+	TestCase* getCurrentTestCase() const;
+	Message* getFailedMessage() const;
+	void clear();
+
+  signals:
+	
+	void outputReceived();
+				 
+  protected slots:
+	
+	void onNewConnection();
+	void onMessageReceived();
+
+  private:
+	
+	Server( QObject* parent = 0 );
+	~Server();
+
+  protected:
+	
+	QLocalSocket* _localSocket;
+	static Server* s_instance;
+	TestCase* _testCase;
+	Message* _failedMessage;
+
+};
+
+}
+
+#endif
