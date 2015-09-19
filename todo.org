@@ -21,14 +21,12 @@
 ############################################################################
 
 * list TODO
-*** property/method
-	Il ne faudrait pas générer la méthode s'il y a déjà une property
-*** toString
-	Il faudrait ajouter des méthodes toString pour permettre un affichage correct de certains objets
-	QRect, QPoint => Il faudrait se baser sur ce dont utilise Qt
-*** enum
-	Lors de la génération, il faut générer un entier plutot qu'un enum sinon les types ne sont pas bien
-	matché et on a des problèmes avec les valeurs par défaut par exemple
+*** TODO toString
+	Add toString methods for prototypes to allow a good print for some objects
+	(example : QRect, QPoint). Try to reused code used for QDebug display 
+*** TODO Enums
+	Generate enum as integer instead of enum. If not, there is a type mismatch
+	et some problems may happen when methods have default value for example.
 *** TODO private 
-	Mettre en privée les méthodes en underscore.
+	Make qats.js methods with underscore in javascript private style
 	
