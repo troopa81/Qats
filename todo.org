@@ -78,3 +78,7 @@
 	add function to edit TableView
 *** TODO Warnings
 	add gcc option to display warnings
+*** TODO Output text
+	- Better display
+	- display backtrace
+	- test compare and verfiy output (keeps \n?)

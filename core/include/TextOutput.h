@@ -20,13 +20,10 @@
 **
 ****************************************************************************/
 
-#ifndef QATS_SERVER_H
-#define QATS_SERVER_H
-
-#include <QLocalServer>
+#ifndef QATS_TEXTOUPUT_H
+#define QATS_TEXTOUPUT_H
 
 #include "Qats.h"
-#include "Test.h"
 
 namespace qats
 {
@@ -34,46 +31,23 @@ namespace qats
 class TestCase;
 class TestFunction;
 class Message;
-class QATS_EXPORT Server : public QLocalServer
+class QATS_EXPORT TextOutput : public QObject
 {
 	Q_OBJECT
 
-  public:
-	
-	static Server* get();
-	void send( const QByteArray& message );
-	TestCase* getCurrentTestCase() const;
-	Message* getFailedMessage() const;
-	void clear();
-	void executeTest( const QString& test );
+public:
 
-  signals:
-	
-	void outputReceived();	
-	void testCaseStarted( TestCase* testCase );
-	void testCaseEnded( TestCase* testCase );
-	void testFunctionStarted( TestFunction* testFunction );
-	void testFunctionPassed( TestFunction* testFunction );
-	void messageAdded( Message* message, TestFunction* testFunction );
-			 
-  protected slots:
-	
-	void onNewConnection();
-	void onMessageReceived();
+	TextOutput( QObject* parent = 0 );
+	~TextOutput();
 
-  private:
-	
-	Server( QObject* parent = 0 );
-	~Server();
+protected slots:
 
-  protected:
-	
-	QLocalSocket* _localSocket;
-	static Server* s_instance;
-	TestCase* _testCase;
-	Message* _failedMessage;
-
-};
+	void onTestCaseStarted( TestCase* testCase ) const;
+	void onTestCaseEnded( TestCase* testCase ) const;
+	void onTestFunctionStarted( TestFunction* testFunction ) const;
+	void onTestFunctionPassed( TestFunction* testFunction ) const;
+	void onMessageAdded( Message* message, TestFunction* testFunction ) const;
+}; 
 
 }
 

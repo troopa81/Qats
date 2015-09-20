@@ -96,7 +96,6 @@ void Server::send( const QByteArray& message )
 		return;
 	}
 
-	qDebug() << "send:" << message;
 	_localSocket->write(message);
     _localSocket->flush();
 }
@@ -154,7 +153,7 @@ void Server::onMessageReceived()
 			Q_ASSERT( _testCase );
 			testFunction = new TestFunction( testFunctionName );
 			_testCase->addTestFunction( testFunction );
-			emit functionStarted( testFunction );
+			emit testFunctionStarted( testFunction );
 			break;
 
 		case Test::FUNCTION_PASS:
@@ -162,7 +161,7 @@ void Server::onMessageReceived()
 			Q_ASSERT( testFunction ); 
 
 			testFunction->pass();
-			emit functionPassed( testFunction );
+			emit testFunctionPassed( testFunction );
 			break;
 
 		case Test::TESTCASE_START:

@@ -27,6 +27,7 @@
 #include <QCommandLineParser>
 
 #include "TestsTrigger.h"
+#include "TextOutput.h"
 
 #define tr(x) QCoreApplication::translate("main", x)
 
@@ -50,11 +51,35 @@ application, in order to easily and rapidely write end to end tests." ) );
     parser.addPositionalArgument("scripts", tr( "Javascript test \
 files.\nCould be also directories. If so, all Javascript test files from the directory are executed."));
 
+    // output type option
+    QCommandLineOption outputTypeOption("output-type", tr( "Output type : TEXT, XUNIT"), 
+										tr( "type" ), "TEXT" );
+    parser.addOption(outputTypeOption);
+
 	parser.process(app);
 
     QStringList args = parser.positionalArguments();
 	if ( args.count() < 2 )
 	{
+		std::cout << qPrintable( tr( "Bad number of arguments" ) );
+		std::cout << qPrintable( parser.helpText() );
+		return 1;
+	}
+
+	QString outputType = parser.value( outputTypeOption ); 
+	if ( outputType == "TEXT" )
+	{
+		qats::TextOutput* textOutput = new qats::TextOutput( &app ); 
+	}
+	else if ( outputType == "XUNIT" )
+	{
+		std::cout << qPrintable( tr( "XUNIT type not implemented yet" ) );
+		std::cout << qPrintable( parser.helpText() );
+		return 1;
+	}
+	else
+	{
+		std::cout << qPrintable( tr( "Wrong output type '%1'" ).arg( outputType ) );
 		std::cout << qPrintable( parser.helpText() );
 		return 1;
 	}
