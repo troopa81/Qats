@@ -47,7 +47,7 @@ function qWarn(message) {
 
 Qats.executeTestCase = function(testcase) {
 
-	Qats.sendMessage( TestEnums.USECASE_START, [ testcase['name'] ] );
+	Qats.sendMessage( TestEnums.TESTCASE_START, [ testcase['name'] ] );
 
     if (!Qats._executeTestFunction(testcase, "initTestCase")) 
 	{
@@ -66,7 +66,7 @@ Qats.executeTestCase = function(testcase) {
 
     Qats._executeTestFunction(testcase, "cleanupTestCase");
 
-	Qats.sendMessage( TestEnums.USECASE_END, [ ] );
+	Qats.sendMessage( TestEnums.TESTCASE_END, [ ] );
 }
 
 Qats._prepareData = function( data )

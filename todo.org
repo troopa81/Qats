@@ -34,6 +34,11 @@
 	Design a logo. two cat, one red (failed), one gree (succeeded)
 *** TODO command line
 	Start qats in command line to trigger on or several testcase from several files
+	options : 
+	- delay
+	- xml or text output
+	- restart tested application before each testCase or executed script
+	- restart after fatal testcase if any
 *** TODO Fatal
 	Detect when the tested application has exited (seg fault). Restart application to 
 	launch other test (with option)
@@ -71,3 +76,5 @@
 	find string in comboBox before selecting it
 *** TODO TableView
 	add function to edit TableView
+*** TODO Warnings
+	add gcc option to display warnings

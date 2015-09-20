@@ -126,7 +126,9 @@ void Server::onMessageReceived()
 			testFunction = _testCase ? _testCase->getCurrentTestFunction() : 0;
 			Q_ASSERT( testFunction ); 
 
-			testFunction->addWarnMessage( new Message( message, backtrace ) ); 
+			messageObject = new Message( message, backtrace );
+			testFunction->addWarnMessage( messageObject ); 
+			emit messageAdded( messageObject, testFunction );
 			break; 
 
 		case Test::FAIL:
@@ -144,13 +146,15 @@ void Server::onMessageReceived()
 				delete _failedMessage;
 				_failedMessage = messageObject;
 			}
-
+			emit messageAdded( messageObject, testFunction );
 			break; 
 
 		case Test::FUNCTION_START:
 			in >> testFunctionName;
 			Q_ASSERT( _testCase );
-			_testCase->addTestFunction( new TestFunction( testFunctionName ) );
+			testFunction = new TestFunction( testFunctionName );
+			_testCase->addTestFunction( testFunction );
+			emit functionStarted( testFunction );
 			break;
 
 		case Test::FUNCTION_PASS:
@@ -158,18 +162,23 @@ void Server::onMessageReceived()
 			Q_ASSERT( testFunction ); 
 
 			testFunction->pass();
+			emit functionPassed( testFunction );
 			break;
 
-		case Test::USECASE_START:
+		case Test::TESTCASE_START:
 			delete _testCase;
 			in >> testCaseName; 
 			_testCase = new TestCase( testCaseName, this );
+			emit testCaseStarted( _testCase );
 			break;
 
-		case Test::USECASE_END:
+		case Test::TESTCASE_END:
+			emit testCaseEnded( _testCase );
 			break; 
 		}
 	}
+
+	// TODO to be removed (still used in MainWindow for output display) 
 	emit outputReceived();
 }
 

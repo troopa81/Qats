@@ -28,6 +28,8 @@
 
 #include "Qats.h"
 
+class QProcess;
+
 namespace qats
 {
 
@@ -47,7 +49,7 @@ public slots:
 protected: 
 
 	QStringList _scripts; 
-
+	QProcess* _process;
 }; 
 
 }

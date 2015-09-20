@@ -32,6 +32,7 @@ namespace qats
 {
 
 class TestCase;
+class TestFunction;
 class Message;
 class QATS_EXPORT Server : public QLocalServer
 {
@@ -48,8 +49,13 @@ class QATS_EXPORT Server : public QLocalServer
 
   signals:
 	
-	void outputReceived();
-				 
+	void outputReceived();	
+	void testCaseStarted( TestCase* testCase );
+	void testCaseEnded( TestCase* testCase );
+	void functionStarted( TestFunction* testFunction );
+	void functionPassed( TestFunction* testFunction );
+	void messageAdded( Message* message, TestFunction* testFunction );
+			 
   protected slots:
 	
 	void onNewConnection();

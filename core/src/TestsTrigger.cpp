@@ -21,9 +21,12 @@
 ****************************************************************************/
 
 #include <QProcess>
+#include <QCoreApplication>
+#include <QEventLoop>
 
 #include "Server.h"
 #include "TestsTrigger.h"
+#include "TestCase.h"
 
 namespace qats
 {
@@ -40,8 +43,8 @@ TestsTrigger::TestsTrigger( const QStringList& args, QObject* parent )
 	connect( Server::get(), &Server::newConnection, this, &TestsTrigger::triggerTests );
 
 	// start tested application
-    QProcess *myProcess = new QProcess( this );
-    myProcess->start(_scripts.takeFirst(), QStringList());
+    _process = new QProcess( this );
+    _process->start(_scripts.takeFirst(), QStringList());
 }
 
 /*!
@@ -49,7 +52,6 @@ TestsTrigger::TestsTrigger( const QStringList& args, QObject* parent )
  */
 TestsTrigger::~TestsTrigger()
 {
-	
 }
 
 /*! 
@@ -60,7 +62,18 @@ void TestsTrigger::triggerTests()
 	foreach( QString script, _scripts )
 	{
 		Server::get()->executeTest( script );
+
+		// wait for testcase to be ended 
+		QEventLoop loop;
+		QObject::connect(Server::get(), &Server::testCaseEnded, &loop, &QEventLoop::quit);
+		loop.exec();
 	}
+
+	// close tested application
+	_process->close();
+
+	// finish, exit the application
+	QCoreApplication::exit();
 }
 
 }; 

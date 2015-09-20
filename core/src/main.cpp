@@ -56,7 +56,7 @@ files.\nCould be also directories. If so, all Javascript test files from the dir
 	if ( args.count() < 2 )
 	{
 		std::cout << qPrintable( parser.helpText() );
-		return 0;
+		return 1;
 	}
 
 	qats::TestsTrigger testsTrigger( args ); 
