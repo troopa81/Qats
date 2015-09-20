@@ -118,7 +118,7 @@
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
-        <widget class="QTreeView" name="_useCases"/>
+        <widget class="QTreeView" name="_testCases"/>
         <widget class="QTreeView" name="_output"/>
        </widget>
       </item>

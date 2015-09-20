@@ -20,54 +20,48 @@
 **
 ****************************************************************************/
 
-#ifndef QATS_SERVER_H
-#define QATS_SERVER_H
+#ifndef QATS_MAINWINDOW_H
+#define QATS_MAINWINDOW_H
 
-#include <QLocalServer>
+#include <QMainWindow>
+#include <QStandardItemModel>
 
 #include "Qats.h"
 #include "Test.h"
 
+namespace Ui
+{
+class MainWindow;
+}
+
 namespace qats
 {
 
-class TestCase;
-class Message;
-class QATS_EXPORT Server : public QLocalServer
+class QATS_EXPORT MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
-  public:
-	
-	static Server* get();
-	void send( const QByteArray& message );
-	TestCase* getCurrentTestCase() const;
-	Message* getFailedMessage() const;
-	void clear();
+public:
+	// public operations
+	MainWindow( QWidget* parent = 0 );
+	virtual ~MainWindow();
 
-  signals:
-	
-	void outputReceived();
-				 
-  protected slots:
-	
-	void onNewConnection();
-	void onMessageReceived();
+protected slots:
 
-  private:
-	
-	Server( QObject* parent = 0 );
-	~Server();
+	void on__testCases_doubleClicked(const QModelIndex & index);
+	void on__loadScripts_clicked();
+	void onOutputReceived();
 
-  protected:
-	
-	QLocalSocket* _localSocket;
-	static Server* s_instance;
-	TestCase* _testCase;
-	Message* _failedMessage;
+protected: 
 
-};
+	QString getLineFromFile( const QString& filePath, int line ) const;
+	void addBacktraceItems( QStandardItem* root, const QString& strBacktrace ) const;
 
-}
+	Ui::MainWindow* _ui; 
+	QStandardItemModel*    _model;
+	QStandardItemModel*    _outputModel;
+}; 
+
+}; 
 
 #endif

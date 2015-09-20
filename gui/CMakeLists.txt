@@ -22,11 +22,26 @@
 
 cmake_minimum_required (VERSION 3.2.2)
 
-project(qats)
+project(qatsGui)
 
-add_subdirectory( "${CMAKE_SOURCE_DIR}/core" )
-add_subdirectory( "${CMAKE_SOURCE_DIR}/gui" )
+find_package(Qt5Widgets)
+find_package(Qt5Test)
+find_package(Qt5Script)
 
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons" DESTINATION resources)
-install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/qats.js" DESTINATION resources)
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources/cmake/" DESTINATION cmake)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+file(GLOB CPP_LIST "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+file(GLOB UI_LIST  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.ui")
+file(GLOB INC_LIST "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")
+
+# app
+add_executable(qatsGui ${CPP_LIST} ${INC_LIST})
+target_include_directories(qatsGui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" )
+target_include_directories(qatsGui PUBLIC "${CMAKE_SOURCE_DIR}/core/include")
+target_link_libraries(qatsGui qatsClient)
+qt5_use_modules(qatsGui Widgets Test Script Network)
+
+install(TARGETS qatsGui
+  RUNTIME DESTINATION bin )

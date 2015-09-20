@@ -20,24 +20,55 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
-#include <QDir>
+#ifndef QATS_SERVER_H
+#define QATS_SERVER_H
 
-#include "MainWindow.h"
-#include "Server.h"
+#include <QLocalServer>
 
-int main( int argc, char* argv[] )
+#include "Qats.h"
+#include "Test.h"
+
+namespace qats
 {
-	QApplication app( argc, argv );
 
-	QDir::setSearchPaths("icons", QStringList( app.applicationDirPath() + "/../resources/icons" ) );
+class TestCase;
+class Message;
+class QATS_EXPORT Server : public QLocalServer
+{
+	Q_OBJECT
 
-	qats::MainWindow mainWindow;
+  public:
+	
+	static Server* get();
+	void send( const QByteArray& message );
+	TestCase* getCurrentTestCase() const;
+	Message* getFailedMessage() const;
+	void clear();
+	void executeTest( const QString& test );
 
-	// initalize server
-	qats::Server::get();
+  signals:
+	
+	void outputReceived();
+				 
+  protected slots:
+	
+	void onNewConnection();
+	void onMessageReceived();
 
-	mainWindow.show();
+  private:
+	
+	Server( QObject* parent = 0 );
+	~Server();
 
-	return app.exec();
+  protected:
+	
+	QLocalSocket* _localSocket;
+	static Server* s_instance;
+	TestCase* _testCase;
+	Message* _failedMessage;
+
+};
+
 }
+
+#endif

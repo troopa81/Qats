@@ -62,6 +62,7 @@
 	Separate different Qats JS function in module
 *** TODO C++ Module
 	Make some different module for client, server, qt bindings, and generated part
+	core/gui/client/server/bindings(with submodule generated)
 *** TODO Import file
 	Be sure we can import file a js file from tests
 *** TODO Checkbox state

@@ -38,7 +38,7 @@ namespace qats
 
 /*!
   \class qats::MainWindow
-  \brief This class test use case for SDI connexion
+  \brief class display test cases and allow to execute them
 */
 
 MainWindow::MainWindow( QWidget* parent )
@@ -49,8 +49,8 @@ MainWindow::MainWindow( QWidget* parent )
 
 	_model = new QStandardItemModel( this );
 
-	_ui->_useCases->setModel( _model );
-	_ui->_useCases->setEditTriggers( QAbstractItemView::NoEditTriggers );
+	_ui->_testCases->setModel( _model );
+	_ui->_testCases->setEditTriggers( QAbstractItemView::NoEditTriggers );
 
 	connect( Server::get(), &Server::outputReceived, this, &MainWindow::onOutputReceived );
 
@@ -67,9 +67,9 @@ MainWindow::~MainWindow()
 }
 
 /*!
-  called whenever use doucle click on Use Case tree view
+  called whenever use doucle click on test Case tree view
  */
-void MainWindow::on__useCases_doubleClicked(const QModelIndex & index)
+void MainWindow::on__testCases_doubleClicked(const QModelIndex & index)
 {
 	// clear previous content
 	_outputModel->clear();
@@ -82,12 +82,12 @@ void MainWindow::on__useCases_doubleClicked(const QModelIndex & index)
 	QString scriptPath = var.toString();
    	if ( scriptPath.isEmpty() ) 
 	{
-		qWarning() << QString( "Cannot execute use case '%1'" ).arg( item->text() );
+		qWarning() << QString( "Cannot execute test case '%1'" ).arg( item->text() );
 		return;
 	}
 
 	QByteArray methodName = item->data( METHOD_NAME ).toByteArray(); 
-	executeTest( scriptPath );
+	Server::get()->executeTest( scriptPath );
 }
 
 /*! 
@@ -110,19 +110,6 @@ void MainWindow::on__loadScripts_clicked()
 		
 		_model->appendRow( item );
 	}
-}
-
-/*! 
-  execute \param test
-*/
-void MainWindow::executeTest( const QString& test )
-{
-	QByteArray block;
-    QDataStream out(&block, QIODevice::WriteOnly);
-	out << QApplication::applicationDirPath() + "/../resources/qats.js";
-    out << test;
-
-	Server::get()->send( block );
 }
 
 /*! 

@@ -21,6 +21,7 @@
 ****************************************************************************/
 
 #include <QLocalSocket>
+#include <QCoreApplication>
 
 #include "Server.h"
 #include "TestFunction.h"
@@ -199,6 +200,19 @@ void Server::clear()
 
 	delete _failedMessage; 
 	_failedMessage = 0;
+}
+
+/*! 
+  execute \param test
+*/
+void Server::executeTest( const QString& test )
+{
+	QByteArray block;
+    QDataStream out(&block, QIODevice::WriteOnly);
+	out << QCoreApplication::applicationDirPath() + "/../resources/qats.js";
+    out << test;
+
+	Server::get()->send( block );
 }
 
 };

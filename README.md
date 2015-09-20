@@ -44,8 +44,8 @@ If you want to use a specific Qt directory and custom Qats install, add this to 
 First, check that your lib directory is in ld path. If not :
 ```shell
 $ export LD_LIBRARY_PATH=$INSTALL_DIR:$LD_LIBRARY_PATH
-$ qats&
-$ qatsTets
+$ qatsGui&
+$ qatsTests
 ```
 
 Then click "Load script dir", select "Qats/tests/scripts" directory, and

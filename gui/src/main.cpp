@@ -20,49 +20,26 @@
 **
 ****************************************************************************/
 
-#ifndef QATS_MAINWINDOW_H
-#define QATS_MAINWINDOW_H
+#include <QApplication>
+#include <QDir>
 
-#include <QMainWindow>
-#include <QStandardItemModel>
+#include "MainWindow.h"
+#include "Server.h"
 
-#include "Qats.h"
-#include "Test.h"
-
-namespace Ui
+int main( int argc, char* argv[] )
 {
-class MainWindow;
+	QApplication app( argc, argv );
+	QCoreApplication::setApplicationName("Qats");
+    QCoreApplication::setApplicationVersion("0.1");
+
+	QDir::setSearchPaths("icons", QStringList( app.applicationDirPath() + "/../resources/icons" ) );
+
+	qats::MainWindow mainWindow;
+
+	// initalize server
+	qats::Server::get();
+
+	mainWindow.show();
+
+	return app.exec();
 }
-
-namespace qats
-{
-
-class QATS_EXPORT MainWindow : public QMainWindow
-{
-	Q_OBJECT
-
-public:
-	// public operations
-	MainWindow( QWidget* parent = 0 );
-	virtual ~MainWindow();
-
-protected slots:
-
-	void on__useCases_doubleClicked(const QModelIndex & index);
-	void on__loadScripts_clicked();
-	void onOutputReceived();
-
-protected: 
-
-	void executeTest( const QString& test );
-	QString getLineFromFile( const QString& filePath, int line ) const;
-	void addBacktraceItems( QStandardItem* root, const QString& strBacktrace ) const;
-
-	Ui::MainWindow* _ui; 
-	QStandardItemModel*    _model;
-	QStandardItemModel*    _outputModel;
-}; 
-
-}; 
-
-#endif
