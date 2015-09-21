@@ -25,6 +25,7 @@
 #include <QApplication>
 #include <QDir>
 #include <QCommandLineParser>
+#include <QSharedPointer>
 
 #include "TestsTrigger.h"
 #include "TextOutput.h"
@@ -52,37 +53,60 @@ application, in order to easily and rapidely write end to end tests." ) );
 files.\nCould be also directories. If so, all Javascript test files from the directory are executed."));
 
     // output type option
-    QCommandLineOption outputTypeOption("output-type", tr( "Output type : TEXT, XUNIT"), 
+    QCommandLineOption outputTypeOption("output-type", tr( "Output type : TEXT, XUNIT (TEXT by default)"), 
 										tr( "type" ), "TEXT" );
     parser.addOption(outputTypeOption);
 
+    // output file option
+    QCommandLineOption outputFileOption("output-file", tr( "Output file (standard output by default)"), 
+										tr( "type" ), "" );
+    parser.addOption(outputFileOption);
+
+	// parse args
 	parser.process(app);
 
     QStringList args = parser.positionalArguments();
 	if ( args.count() < 2 )
 	{
-		std::cout << qPrintable( tr( "Bad number of arguments" ) );
-		std::cout << qPrintable( parser.helpText() );
+		std::cout << qPrintable( tr( "Bad number of arguments" ) )
+				  << qPrintable( parser.helpText() ) << std::endl;
 		return 1;
 	}
 
+	// output file (use a shared pointer to properly delete file in case we exit the application with return)
+	QSharedPointer<QFile> outputFile;
+	QString strOutputFile = parser.value( outputFileOption ); 
+	if ( !strOutputFile.isEmpty() )
+	{
+		outputFile = QSharedPointer<QFile> ( new QFile( strOutputFile ) );
+		if ( !outputFile->open( QIODevice::WriteOnly ) )
+		{
+			std::cout << qPrintable( tr( "Cannot open output file '%1'" ).arg( strOutputFile ) )
+					  << qPrintable( parser.helpText() ) << std::endl;
+			return 1;
+		}
+	}
+
+	// output type
 	QString outputType = parser.value( outputTypeOption ); 
 	if ( outputType == "TEXT" )
 	{
-		qats::TextOutput* textOutput = new qats::TextOutput( &app ); 
+		qats::TextOutput* textOutput = outputFile ? new qats::TextOutput( outputFile.data(), &app ) 
+			: new qats::TextOutput( &app ); 
 	}
 	else if ( outputType == "XUNIT" )
 	{
-		std::cout << qPrintable( tr( "XUNIT type not implemented yet" ) );
-		std::cout << qPrintable( parser.helpText() );
+		std::cout << qPrintable( tr( "XUNIT type not implemented yet" ) )
+				  << qPrintable( parser.helpText() ) << std::endl;
 		return 1;
 	}
 	else
 	{
-		std::cout << qPrintable( tr( "Wrong output type '%1'" ).arg( outputType ) );
-		std::cout << qPrintable( parser.helpText() );
+		std::cout << qPrintable( tr( "Wrong output type '%1'" ).arg( outputType ) )
+				  << qPrintable( parser.helpText() ) << std::endl;
 		return 1;
 	}
+
 
 	qats::TestsTrigger testsTrigger( args ); 
 

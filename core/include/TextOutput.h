@@ -23,6 +23,8 @@
 #ifndef QATS_TEXTOUPUT_H
 #define QATS_TEXTOUPUT_H
 
+#include <QTextStream>
+
 #include "Qats.h"
 
 namespace qats
@@ -38,21 +40,24 @@ class QATS_EXPORT TextOutput : public QObject
 public:
 
 	TextOutput( QObject* parent = 0 );
+	TextOutput( QFile* file, QObject* parent = 0 );
 	~TextOutput();
 
 protected slots:
 
-	void onTestCaseStarted( TestCase* testCase ) const;
-	void onTestCaseEnded( TestCase* testCase ) const;
-	void onTestFunctionStarted( TestFunction* testFunction ) const;
-	void onTestFunctionPassed( TestFunction* testFunction ) const;
-	void onWarnMessageAdded( Message* message, TestFunction* testFunction ) const;
-	void onFailMessageAdded( Message* message, TestFunction* testFunction ) const;
+	void onTestCaseStarted( TestCase* testCase );
+	void onTestCaseEnded( TestCase* testCase );
+	void onTestFunctionStarted( TestFunction* testFunction );
+	void onTestFunctionPassed( TestFunction* testFunction );
+	void onWarnMessageAdded( Message* message, TestFunction* testFunction );
+	void onFailMessageAdded( Message* message, TestFunction* testFunction );
 
 protected:
 	
-	void printBacktrace( const Message* message ) const;
+	void init();
+	void printBacktrace( const Message* message );
 
+	QTextStream _out; 
 }; 
 
 }
