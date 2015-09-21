@@ -127,7 +127,7 @@ void Server::onMessageReceived()
 
 			messageObject = new Message( message, backtrace );
 			testFunction->addWarnMessage( messageObject ); 
-			emit messageAdded( messageObject, testFunction );
+			emit warnMessageAdded( messageObject, testFunction );
 			break; 
 
 		case Test::FAIL:
@@ -145,7 +145,7 @@ void Server::onMessageReceived()
 				delete _failedMessage;
 				_failedMessage = messageObject;
 			}
-			emit messageAdded( messageObject, testFunction );
+			emit failMessageAdded( messageObject, testFunction );
 			break; 
 
 		case Test::FUNCTION_START:

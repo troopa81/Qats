@@ -333,4 +333,26 @@ QList<Test::BacktraceElt> Test::parseBacktrace( const QString& strBacktrace )
 	return backtrace;
 }
 
+/*!
+  \return line content from \param filePath at \param line
+*/
+QString Test::getLineFromFile( const QString& filePath, int line )
+{
+	QFile file( filePath );
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		return tr( "Error: Cannot open '%1' file" ).arg( filePath );
+	}
+	
+	QString lineContent = tr("Error: There is no line '%1' in file '%2'").arg( line ).arg( filePath );
+	int i = 0;
+	while(!file.atEnd() && i != line)
+	{
+		lineContent = file.readLine();
+		i++;
+	}
+
+	return lineContent.trimmed();
+}
+
 }

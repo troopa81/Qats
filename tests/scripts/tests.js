@@ -27,16 +27,34 @@ var myTest = {
 	{
 	},
 
-	basicTest: function()
+	qWarnTest: function()
 	{
 		qWarn( "test" );
-		
-		var test = "test"; 
-		qVerify( test == "test" );
+	},
 
-		qCompare( test, "test" );
-
+	qFailTest: function()
+	{
 		qFail( "fail!" );
+	},
+
+	qCompareTest: function()
+	{
+		qCompare( "titi", "titi" );
+	},
+
+	qCompareFailTest: function()
+	{
+		qCompare( "titi", "toto" );
+	},
+
+	qVerifyTest: function()
+	{
+		qVerify( "titi" == "titi" );
+	},
+
+	qVerifyFailTest: function()
+	{
+		qVerify( "titi" == "toto" );
 	},
 
 	dataTest_data: 

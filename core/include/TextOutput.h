@@ -46,7 +46,13 @@ protected slots:
 	void onTestCaseEnded( TestCase* testCase ) const;
 	void onTestFunctionStarted( TestFunction* testFunction ) const;
 	void onTestFunctionPassed( TestFunction* testFunction ) const;
-	void onMessageAdded( Message* message, TestFunction* testFunction ) const;
+	void onWarnMessageAdded( Message* message, TestFunction* testFunction ) const;
+	void onFailMessageAdded( Message* message, TestFunction* testFunction ) const;
+
+protected:
+	
+	void printBacktrace( const Message* message ) const;
+
 }; 
 
 }

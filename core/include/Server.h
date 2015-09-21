@@ -54,7 +54,8 @@ class QATS_EXPORT Server : public QLocalServer
 	void testCaseEnded( TestCase* testCase );
 	void testFunctionStarted( TestFunction* testFunction );
 	void testFunctionPassed( TestFunction* testFunction );
-	void messageAdded( Message* message, TestFunction* testFunction );
+	void failMessageAdded( Message* message, TestFunction* testFunction );
+	void warnMessageAdded( Message* message, TestFunction* testFunction );
 			 
   protected slots:
 	

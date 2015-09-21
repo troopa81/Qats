@@ -22,7 +22,7 @@
 
 function qCompare(actual, expected) {
     if (actual != expected) {
-		qFail( "Compare failed : Actual : " + actual + " Expected : " + expected );
+		qFail( "Compare failed \n  Actual    : " + actual + "\n  Expected  : " + expected );
     }
 }
 

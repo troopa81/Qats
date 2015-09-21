@@ -74,6 +74,7 @@ public:
 	void setQatsFilePath( const QString& qatsDirPath ); 
 	QString getQatsFilePath() const;
 	static QList<BacktraceElt> parseBacktrace( const QString& backtrace );
+	static QString getLineFromFile( const QString& filePath, int line );
 
 	Client* _client; 
 

@@ -194,28 +194,6 @@ void MainWindow::onOutputReceived( )
 }
 
 /*!
-  \return line content from \param filePath at \param line
-*/
-QString MainWindow::getLineFromFile( const QString& filePath, int line ) const
-{
-	QFile file( filePath );
-	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-	{
-		return tr( "Error: Cannot open '%1' file" ).arg( filePath );
-	}
-	
-	QString lineContent = tr("Error: There is no line '%1' in file '%2'").arg( line ).arg( filePath );
-	int i = 0;
-	while(!file.atEnd() && i != line)
-	{
-		lineContent = file.readLine();
-		i++;
-	}
-
-	return lineContent.trimmed();
-}
-
-/*!
   add backtrace item under \param root according to string \param backtrace
 */
 void MainWindow::addBacktraceItems( QStandardItem* root, const QString& strBacktrace ) const
@@ -229,7 +207,7 @@ void MainWindow::addBacktraceItems( QStandardItem* root, const QString& strBackt
 		QFileInfo fileInfo( backtraceElt._filePath );
 		root->appendRow( QList<QStandardItem*>() << new QStandardItem( fileInfo.fileName() )
 						 << new QStandardItem( QString::number( backtraceElt._lineNumber ) )
-						 << new QStandardItem( getLineFromFile( fileInfo.absoluteFilePath(), backtraceElt._lineNumber ) ) );
+						 << new QStandardItem( Test::getLineFromFile( fileInfo.absoluteFilePath(), backtraceElt._lineNumber ) ) );
 	}
 }
 

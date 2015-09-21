@@ -24,12 +24,15 @@
 
 #include <QLocalSocket>
 #include <QCoreApplication>
+#include <QFileInfo>
 
 #include "TestFunction.h"
 #include "TestCase.h"
 #include "Message.h"
 #include "Server.h"
 #include "TextOutput.h"
+
+#define LINE_SIZE 50
 
 namespace qats
 {
@@ -44,7 +47,8 @@ TextOutput::TextOutput( QObject* parent )
 	connect( Server::get(), &Server::testCaseEnded, this, &TextOutput::onTestCaseEnded );
 	connect( Server::get(), &Server::testFunctionStarted, this, &TextOutput::onTestFunctionStarted );
 	connect( Server::get(), &Server::testFunctionPassed, this, &TextOutput::onTestFunctionPassed );
-	connect( Server::get(), &Server::messageAdded, this, &TextOutput::onMessageAdded );
+	connect( Server::get(), &Server::warnMessageAdded, this, &TextOutput::onWarnMessageAdded );
+	connect( Server::get(), &Server::failMessageAdded, this, &TextOutput::onFailMessageAdded );
 }
 
 /*!
@@ -59,7 +63,9 @@ TextOutput::~TextOutput()
 */
 void TextOutput::onTestCaseStarted( TestCase* testCase ) const
 {
-	std::cout << "################### " << qPrintable( testCase->objectName() ) << " STARTED #################" << std::endl;
+	std::cout << "################### " 
+			  << qPrintable( QString( testCase->objectName() + " STARTED " ).leftJustified( LINE_SIZE, '#' ) )  
+			  << std::endl;
 }
 
 /*! 
@@ -67,7 +73,9 @@ void TextOutput::onTestCaseStarted( TestCase* testCase ) const
 */
 void TextOutput::onTestCaseEnded( TestCase* testCase ) const
 {
-	std::cout << "################### " << qPrintable( testCase->objectName() ) << " ENDED ###################" << std::endl;
+	std::cout << "################### " 
+			  << qPrintable( QString( testCase->objectName() + " ENDED " ).leftJustified( LINE_SIZE, '#' ) )  
+			  << std::endl;
 }
 
 /*! 
@@ -75,7 +83,9 @@ void TextOutput::onTestCaseEnded( TestCase* testCase ) const
 */
 void TextOutput::onTestFunctionStarted( TestFunction* testFunction ) const
 {
-	std::cout << "******************* " << qPrintable( testFunction->objectName() ) << " STARTED" << std::endl;
+	std::cout << "******************* " 
+			  << qPrintable( QString( testFunction->objectName() + " " ).leftJustified( LINE_SIZE, '*' ) )  
+			  << std::endl;
 }
 
 /*! 
@@ -87,11 +97,59 @@ void TextOutput::onTestFunctionPassed( TestFunction* testFunction ) const
 }
 
 /*! 
+  called whenever a warn message has been added
+*/
+void TextOutput::onWarnMessageAdded( Message* message, TestFunction* testFunction ) const
+{
+	std::cout << "WARN : " << qPrintable( message->getMessage() ) << std::endl;
+	printBacktrace( message );
+}
+
+/*! 
   called whenever the test case is started
 */
-void TextOutput::onMessageAdded( Message* message, TestFunction* testFunction ) const
+void TextOutput::onFailMessageAdded( Message* message, TestFunction* testFunction ) const
 {
-	std::cout << qPrintable( message->getMessage() ) << std::endl;
+	std::cout << "FAIL : " << qPrintable( message->getMessage() ) << std::endl;
+	printBacktrace( message );
+}
+
+/*! 
+  format and print on stdout \param strBacktrace
+*/  
+void TextOutput::printBacktrace( const Message* message ) const
+{
+	QList<Test::BacktraceElt> backtrace = Test::parseBacktrace( message->getBacktrace() );
+
+	std::cout << "  Backtrace :\n";
+
+	// When parsing backtrace, remove 3 first elements and last one because useless
+	backtrace = backtrace.mid( 3, backtrace.count()-4 ); 
+
+	// compute file name size 
+	int fileNameSize = -1;
+	foreach( Test::BacktraceElt backtraceElt, backtrace )
+	{
+		QFileInfo fileInfo( backtraceElt._filePath );
+		if ( fileInfo.fileName().size() > fileNameSize )
+		{
+			fileNameSize = fileInfo.fileName().size();
+		}
+	}
+
+	// print
+	foreach( Test::BacktraceElt backtraceElt, backtrace )
+	{
+		QFileInfo fileInfo( backtraceElt._filePath );
+
+		QString strLocation = fileInfo.fileName(); 
+		strLocation = strLocation.leftJustified( fileNameSize, ' ' );
+		strLocation += " (" + QString::number( backtraceElt._lineNumber ) + ")";
+
+		std::cout << "    - " << qPrintable( strLocation ) << " : "
+				  << qPrintable( Test::getLineFromFile( fileInfo.absoluteFilePath(), backtraceElt._lineNumber ) ) 
+				  << std::endl;
+	}
 }
 
 };
