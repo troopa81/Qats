@@ -21,71 +21,10 @@
 ****************************************************************************/
 
 var myTest = {
-    name: "TestsUseCase",
+    name: "GuiTests",
 
-    initTestCase: function() 
+	initTestCase: function() 
 	{
-	},
-
-	qWarnTest: function()
-	{
-		qWarn( "test" );
-	},
-
-	qFailTest: function()
-	{
-		qFail( "fail!" );
-	},
-
-	qCompareTest: function()
-	{
-		qCompare( "titi", "titi" );
-	},
-
-	qCompareFailTest: function()
-	{
-		qCompare( "titi", "toto" );
-	},
-
-	qVerifyTest: function()
-	{
-		qVerify( "titi" == "titi" );
-	},
-
-	qVerifyFailTest: function()
-	{
-		qVerify( "titi" == "toto" );
-	},
-
-	dataTest_data: 
-	{
-		"intVal": [ 6, 1, 3], 
-		"str": [ "a", "b", "c" ],
-		"double": [1.2, 4.5, 3.7]
-	},
-
-	dataTest: function(data)
-	{
-		switch ( data[ "intVal" ] )
-		{
-		case 6:
-			qCompare( data[ "str" ], "a" );
-			qCompare( data[ "double" ], 1.2 );
-			break; 
-		
-		case 1:
-			qCompare( data[ "str" ], "b" );
-			qCompare( data[ "double" ], 4.5 );
-			break; 
-
-		case 3:
-			qCompare( data[ "str" ], "c" );
-			qCompare( data[ "double" ], 3.7 );
-			break; 
-
-		default:
-			qFail( "Wrong value!" );
-		}
 	},
 
 	toolBarAction: function()

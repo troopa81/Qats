@@ -20,13 +20,14 @@
 **
 ****************************************************************************/
 
-#ifndef QATS_TEXTOUTPUT_H
-#define QATS_TEXTOUTPUT_H
+#ifndef QATS_OUTPUT_H
+#define QATS_OUTPUT_H
 
 #include <QTextStream>
 
-#include "Output.h"
 #include "Qats.h"
+
+class QFile;
 
 namespace qats
 {
@@ -34,28 +35,28 @@ namespace qats
 class TestCase;
 class TestFunction;
 class Message;
-class QATS_EXPORT TextOutput : public Output
+class QATS_EXPORT Output : public QObject
 {
 	Q_OBJECT
 
 public:
 
-	TextOutput( QObject* parent = 0 );
-	TextOutput( QFile* file, QObject* parent = 0 );
-	~TextOutput();
+	Output( QObject* parent = 0 );
+	virtual ~Output();
+
+protected slots:
+
+	virtual void onTestCaseStarted( TestCase* testCase );
+	virtual void onTestCaseEnded( TestCase* testCase );
+	virtual void onTestFunctionStarted( TestFunction* testFunction );
+	virtual void onTestFunctionPassed( TestFunction* testFunction );
+	virtual void onWarnMessageAdded( Message* message, TestFunction* testFunction );
+	virtual void onFailMessageAdded( Message* message, TestFunction* testFunction );
 
 protected:
-
-	void onTestCaseStarted( TestCase* testCase );
-	void onTestCaseEnded( TestCase* testCase );
-	void onTestFunctionStarted( TestFunction* testFunction );
-	void onTestFunctionPassed( TestFunction* testFunction );
-	void onWarnMessageAdded( Message* message, TestFunction* testFunction );
-	void onFailMessageAdded( Message* message, TestFunction* testFunction );
-
-protected: 
-
-	QTextStream _out; 
+	
+	void init();
+	QString backtraceToString( const Message* message );
 }; 
 
 }

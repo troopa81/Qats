@@ -43,10 +43,9 @@ namespace qats
   \param parent parent object
 */
 TextOutput::TextOutput( QObject* parent )
-	: QObject( parent ),
-	_out( stdout, QIODevice::WriteOnly )
+	: Output( parent ),
+	  _out( stdout, QIODevice::WriteOnly )
 {
-	init();
 }
 
 /*!
@@ -55,10 +54,9 @@ TextOutput::TextOutput( QObject* parent )
   \param parent parent object
 */
 TextOutput::TextOutput( QFile* file, QObject* parent )
-	: QObject( parent ),
-	_out( file )
+	: Output( parent ),
+	  _out( file )
 {
-	init();
 }
 
 /*!
@@ -68,21 +66,8 @@ TextOutput::~TextOutput()
 {
 }
 
-/*!
-  initialize text output
-*/
-void TextOutput::init()
-{
-	connect( Server::get(), &Server::testCaseStarted, this, &TextOutput::onTestCaseStarted );
-	connect( Server::get(), &Server::testCaseEnded, this, &TextOutput::onTestCaseEnded );
-	connect( Server::get(), &Server::testFunctionStarted, this, &TextOutput::onTestFunctionStarted );
-	connect( Server::get(), &Server::testFunctionPassed, this, &TextOutput::onTestFunctionPassed );
-	connect( Server::get(), &Server::warnMessageAdded, this, &TextOutput::onWarnMessageAdded );
-	connect( Server::get(), &Server::failMessageAdded, this, &TextOutput::onFailMessageAdded );
-}
-
 /*! 
-  called whenever the test case is started
+  \overloaded
 */
 void TextOutput::onTestCaseStarted( TestCase* testCase ) 
 {
@@ -93,7 +78,7 @@ void TextOutput::onTestCaseStarted( TestCase* testCase )
 }
 
 /*! 
-  called whenever the test case is ended
+  \overloaded
 */
 void TextOutput::onTestCaseEnded( TestCase* testCase ) 
 {
@@ -104,7 +89,7 @@ void TextOutput::onTestCaseEnded( TestCase* testCase )
 }
 
 /*! 
-  called whenever the test function is started
+  \overloaded
 */
 void TextOutput::onTestFunctionStarted( TestFunction* testFunction ) 
 {
@@ -115,7 +100,7 @@ void TextOutput::onTestFunctionStarted( TestFunction* testFunction )
 }
 
 /*! 
-  called whenever the test function is passed
+  \overloaded
 */
 void TextOutput::onTestFunctionPassed( TestFunction* testFunction ) 
 {
@@ -124,65 +109,23 @@ void TextOutput::onTestFunctionPassed( TestFunction* testFunction )
 }
 
 /*! 
-  called whenever a warn message has been added
+  \overloaded
 */
 void TextOutput::onWarnMessageAdded( Message* message, TestFunction* testFunction ) 
 {
 	_out << "WARN : " << qPrintable( message->getMessage() ) << "\n";
+	_out << qPrintable( backtraceToString( message ) );
 	_out.flush();
-
-	printBacktrace( message );
 }
 
 /*! 
-  called whenever the test case is started
+  \overloaded
 */
 void TextOutput::onFailMessageAdded( Message* message, TestFunction* testFunction ) 
 {
 	_out << "FAIL : " << qPrintable( message->getMessage() ) << "\n";
+	_out << qPrintable( backtraceToString( message ) );
 	_out.flush();
-
-	printBacktrace( message );
-}
-
-/*! 
-  format and print on stdout \param strBacktrace
-*/  
-void TextOutput::printBacktrace( const Message* message ) 
-{
-	QList<Test::BacktraceElt> backtrace = Test::parseBacktrace( message->getBacktrace() );
-
-	_out << "  Backtrace :\n";
-	_out.flush();
-
-	// When parsing backtrace, remove 3 first elements and last one because useless
-	backtrace = backtrace.mid( 3, backtrace.count()-4 ); 
-
-	// compute file name size 
-	int fileNameSize = -1;
-	foreach( Test::BacktraceElt backtraceElt, backtrace )
-	{
-		QFileInfo fileInfo( backtraceElt._filePath );
-		if ( fileInfo.fileName().size() > fileNameSize )
-		{
-			fileNameSize = fileInfo.fileName().size();
-		}
-	}
-
-	// print
-	foreach( Test::BacktraceElt backtraceElt, backtrace )
-	{
-		QFileInfo fileInfo( backtraceElt._filePath );
-
-		QString strLocation = fileInfo.fileName(); 
-		strLocation = strLocation.leftJustified( fileNameSize, ' ' );
-		strLocation += " (" + QString::number( backtraceElt._lineNumber ) + ")";
-
-		_out << "    - " << qPrintable( strLocation ) << " : "
-			 << qPrintable( Test::getLineFromFile( fileInfo.absoluteFilePath(), backtraceElt._lineNumber ) ) 
-			 << "\n";
-		_out.flush();
-	}
 }
 
 };

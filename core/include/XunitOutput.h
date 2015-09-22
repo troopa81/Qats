@@ -20,10 +20,11 @@
 **
 ****************************************************************************/
 
-#ifndef QATS_TEXTOUTPUT_H
-#define QATS_TEXTOUTPUT_H
+#ifndef QATS_XUNITOUTPUT_H
+#define QATS_XUNITOUTPUT_H
 
-#include <QTextStream>
+#include <QDomDocument>
+#include <QDateTime>
 
 #include "Output.h"
 #include "Qats.h"
@@ -34,17 +35,16 @@ namespace qats
 class TestCase;
 class TestFunction;
 class Message;
-class QATS_EXPORT TextOutput : public Output
+class QATS_EXPORT XunitOutput : public Output
 {
 	Q_OBJECT
 
 public:
 
-	TextOutput( QObject* parent = 0 );
-	TextOutput( QFile* file, QObject* parent = 0 );
-	~TextOutput();
+	XunitOutput( QFile* file, QObject* parent = 0 );
+	~XunitOutput();
 
-protected:
+protected :
 
 	void onTestCaseStarted( TestCase* testCase );
 	void onTestCaseEnded( TestCase* testCase );
@@ -55,7 +55,22 @@ protected:
 
 protected: 
 
-	QTextStream _out; 
+	QFile* _file; 
+
+	QDomDocument _dom; 
+	QDomElement _testSuitesDom; 
+	QDomElement _testSuiteDom; 
+	QDomElement _testCaseDom; 
+
+	int _testSuitesNbTests; 
+	int _testSuitesNbErrors; 
+	int _testSuitesNbFailures; 
+	int _testSuiteNbTests; 
+	int _testSuiteNbErrors; 
+	int _testSuiteNbFailures; 
+	QDateTime _testSuitesStart; 
+	QDateTime _testSuiteStart; 
+	QDateTime _testCaseStart; 
 }; 
 
 }
