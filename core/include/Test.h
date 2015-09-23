@@ -31,7 +31,6 @@
 #include <QComboBox>
 #include <QScriptable>
 #include <QScriptEngine>
-#include <QDebug>
 #include <QToolBar>
 #include <QMainWindow>
 #include <QDir>

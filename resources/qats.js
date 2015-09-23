@@ -505,3 +505,23 @@ QatsComboBox.select = function( comboBox, value )
 	// wait for menu to be closed
 	Qats.waitFor( function() { return !view.isVisible() } );
 }
+
+QatsItemView = {}
+QatsItemView.setChecked = function( itemView, index, isChecked )
+{
+	qVerify( itemView ); 
+	qVerify( index ); 
+	qVerify( isChecked != undefined && isChecked != null ); 
+	
+	var model = itemView.model(); 
+	qVerify( model );
+
+	itemView.scrollTo( index );
+
+	// TODO we can't mouseClick on checkbox area because at the moment, I don't see a way to
+	// find out where actually this area is
+
+	// TODO : Qt.CheckStateRole instead of 10 when managing correctly CheckStateRole
+	model.setData( index, isChecked ? Qt.Checked : Qt.Unchecked, 10 );
+}
+

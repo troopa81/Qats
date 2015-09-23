@@ -97,8 +97,6 @@ return object->data(index,role);
 }
 bool setData(const QModelIndex & index,const QVariant & value,int role = Qt::EditRole)
 {
-	qDebug() << "index=" << index << " value=" << value << "role=" << role;
-
 QAbstractItemModel *object = qscriptvalue_cast<QAbstractItemModel*>(thisObject());
 return object->setData(index,value,role);
 }
@@ -241,7 +239,6 @@ return object->buddy(index);
 
 QModelIndexList match(const QModelIndex & start,int role,const QVariant & value,int hits = 1,int flags = Qt::MatchFlags(Qt::MatchStartsWith|Qt::MatchWrap))
 {
-	qDebug() << "start=" << start << "role=" << role << "value=" << value << "hits=" << hits << "flags=" << flags;
 QAbstractItemModel *object = qscriptvalue_cast<QAbstractItemModel*>(thisObject());
 return object->match(start,role,value,hits,Qt::MatchFlags(flags));
 }
