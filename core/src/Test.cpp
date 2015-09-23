@@ -364,13 +364,13 @@ QString Test::getLineFromFile( const QString& filePath, int line )
 */
 void Test::include( const QString& scriptFile )
 {
-	//set ScriptContext
-    QScriptContext *context = _scriptEngine->currentContext();
-    QScriptContext *parent= context->parentContext();
-    if(parent!=0)
+	// share parent context with current context
+    QScriptContext* context = _scriptEngine->currentContext();
+    QScriptContext* parent = context->parentContext();
+    if( parent )
     {
-        context->setActivationObject(context->parentContext()->activationObject());
-        context->setThisObject(context->parentContext()->thisObject());
+        context->setActivationObject( parent->activationObject() );
+        context->setThisObject( parent->thisObject() );
     }
 
 	if ( !evaluateScript( _scriptDir.absoluteFilePath( scriptFile ) ) )
