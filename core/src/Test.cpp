@@ -20,6 +20,8 @@
 **
 ****************************************************************************/
 
+#include <iostream>
+
 #include <QTest>
 #include <QToolButton>
 #include <QLineEdit>
@@ -224,12 +226,13 @@ int Test::executeTest(const QString& scriptFilePath, int delay )
 
 	Test::get()->_scriptEngine->globalObject().setProperty("QApplication", Test::get()->_scriptEngine->newQObject(new QApplicationPrototype));
 
-	if ( !evaluateScript( *(Test::get()->_scriptEngine), _qatsFilePath ) )
+	if ( !evaluateScript( _qatsFilePath ) )
 	{
 		return -1;
 	}
 
-	if ( !evaluateScript( *(Test::get()->_scriptEngine), scriptFilePath ) )
+	_scriptDir = QFileInfo( scriptFilePath ).dir();
+	if ( !evaluateScript( scriptFilePath ) )
 	{
 		return -1;
 	}
@@ -241,7 +244,7 @@ int Test::executeTest(const QString& scriptFilePath, int delay )
   evaluate script \param filename and \return true if evaluation is OK
   \param scriptEngine the engine script in charge of evaluation
 */
-bool Test::evaluateScript( QScriptEngine& scriptEngine, const QString& fileName )
+bool Test::evaluateScript( const QString& fileName )
 {
 	// open file
 	QFile scriptFile( fileName );
@@ -255,12 +258,12 @@ bool Test::evaluateScript( QScriptEngine& scriptEngine, const QString& fileName 
 	QTextStream stream( &scriptFile );
 	QString contents = stream.readAll();
 	scriptFile.close();
-	QScriptValue scriptValue = scriptEngine.evaluate( contents, fileName );
+	QScriptValue scriptValue = _scriptEngine->evaluate( contents, fileName );
 	if ( scriptValue.isError() )
 	{
 		sendMessage( FAIL, QStringList() << QString( "Error while script evaluation '%1'" ).arg( scriptValue.toString() )
 					 // TODO : backtrace won't display in MainWindow because we squeeze 3 first one and last one
-					 << QString( "%1:%2" ).arg( fileName ).arg( scriptEngine.uncaughtExceptionLineNumber() ) );
+					 << QString( "%1:%2" ).arg( fileName ).arg( _scriptEngine->uncaughtExceptionLineNumber() ) );
 		return false;
 	}
 
@@ -353,6 +356,29 @@ QString Test::getLineFromFile( const QString& filePath, int line )
 	}
 
 	return lineContent.trimmed();
+}
+
+/*! 
+  include \param scriptFile into currently executed script file
+  included script file is relative to currenly executed script file
+*/
+void Test::include( const QString& scriptFile )
+{
+	//set ScriptContext
+    QScriptContext *context = _scriptEngine->currentContext();
+    QScriptContext *parent= context->parentContext();
+    if(parent!=0)
+    {
+        context->setActivationObject(context->parentContext()->activationObject());
+        context->setThisObject(context->parentContext()->thisObject());
+    }
+
+	if ( !evaluateScript( _scriptDir.absoluteFilePath( scriptFile ) ) )
+	{
+		// TODO : backtrace won't display in MainWindow because we squeeze 3 first one and last one
+		sendMessage( FAIL, QStringList() << QString( "Cannot include file '%1'" ).arg( scriptFile )
+					 << getBacktrace() );
+	}
 }
 
 }

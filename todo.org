@@ -68,7 +68,8 @@
 *** TODO C++ Module
 	Make some different module for client, server, qt bindings, and generated part
 	core/gui/client/server/bindings(with submodule generated)
-*** TODO Import file
+*** DONE Import file
+	CLOSED: [2015-09-23 mer. 13:14]
 	Be sure we can import file a js file from tests
 *** TODO Checkbox state
 	add a method for changing checbox state
@@ -83,3 +84,6 @@
 	- Better display
 	- display backtrace
 	- test compare and verfiy output (keeps \n?)
+** Bugs
+*** TODO TextOutput formatting
+	Take care of line number (30 != 100) in characters count to have aligned displays

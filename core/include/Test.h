@@ -34,6 +34,7 @@
 #include <QDebug>
 #include <QToolBar>
 #include <QMainWindow>
+#include <QDir>
 
 namespace qats
 {
@@ -84,16 +85,18 @@ public slots:
 	
 	void sendMessage( MessageType type, QStringList content );
 	QStringList getBacktrace(); 
+	void include( const QString& scriptFile );
 
 protected:
 
 	Test();
 	~Test(){};
 
-	bool evaluateScript( QScriptEngine& scriptEngine, const QString& filename );
+	bool evaluateScript( const QString& filename );
 
 	QScriptEngine* _scriptEngine;
 	QString _qatsFilePath;
+	QDir _scriptDir;
 
 	int   _delay;
 	static Test* s_instance;

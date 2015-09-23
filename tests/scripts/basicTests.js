@@ -20,6 +20,8 @@
 **
 ****************************************************************************/
 
+Qats.include("imported/imported.js")
+
 var myTest = {
     name: "BasicTests",
 
@@ -86,6 +88,16 @@ var myTest = {
 		default:
 			qFail( "Wrong value!" );
 		}
+	},
+
+	importTest: function()
+	{
+		importedFunction();
+	},
+
+	importFailTest: function()
+	{
+		failImportedFunction();
 	},
 
 	cleanupTestCase: function() {}
