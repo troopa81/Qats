@@ -69,7 +69,7 @@ public:
 	BacktraceElt():_lineNumber(-1){}
 	};
 
-	int executeTest(const QString& scriptFilePath, int delay = 0, bool writeResults = true, bool fullAuto = true );
+	int executeTest(const QString& scriptFilePath, int delay = 0 );
 	
 	void setQatsFilePath( const QString& qatsDirPath ); 
 	QString getQatsFilePath() const;

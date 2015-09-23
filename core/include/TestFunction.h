@@ -56,9 +56,9 @@ public:
 
 protected: 
 
-	Message* _failedMessage;
 	QList<Message*> _warnMessages;
 	State _state;
+	Message* _failedMessage;
 };
 
 }

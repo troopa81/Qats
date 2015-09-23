@@ -76,7 +76,8 @@
 	find string in comboBox before selecting it
 *** TODO TableView
 	add function to edit TableView
-*** TODO Warnings
+*** DONE Warnings
+	CLOSED: [2015-09-23 mer. 11:05]
 	add gcc option to display warnings
 *** TODO Output text
 	- Better display

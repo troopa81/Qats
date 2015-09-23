@@ -61,7 +61,7 @@ void Client::onMessageReceived()
 	Test::get()->setQatsFilePath( qatsFilePath );
 
 	qDebug() << "Execute :" << scriptPath;
-	Test::get()->executeTest( scriptPath, 50, true, false );
+	Test::get()->executeTest( scriptPath, 50 );
 }
 
 

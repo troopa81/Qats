@@ -139,7 +139,7 @@ Test::Test()
 /*!
   execute given \param scriptFilePath
 */
-int Test::executeTest(const QString& scriptFilePath, int delay, bool writeResults, bool fullAuto )
+int Test::executeTest(const QString& scriptFilePath, int delay )
 {
 	// TODO better management of delay
 	_delay = delay; 

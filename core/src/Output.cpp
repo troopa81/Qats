@@ -63,6 +63,7 @@ Output::~Output()
 */
 void Output::onTestCaseStarted( TestCase* testCase ) 
 {
+	Q_UNUSED( testCase );
 }
 
 /*! 
@@ -70,6 +71,7 @@ void Output::onTestCaseStarted( TestCase* testCase )
 */
 void Output::onTestCaseEnded( TestCase* testCase ) 
 {
+	Q_UNUSED( testCase );
 }
 
 /*! 
@@ -77,6 +79,7 @@ void Output::onTestCaseEnded( TestCase* testCase )
 */
 void Output::onTestFunctionStarted( TestFunction* testFunction ) 
 {
+	Q_UNUSED( testFunction );
 }
 
 /*! 
@@ -84,6 +87,7 @@ void Output::onTestFunctionStarted( TestFunction* testFunction )
 */
 void Output::onTestFunctionPassed( TestFunction* testFunction ) 
 {
+	Q_UNUSED( testFunction );
 }
 
 /*! 
@@ -91,6 +95,8 @@ void Output::onTestFunctionPassed( TestFunction* testFunction )
 */
 void Output::onWarnMessageAdded( Message* message, TestFunction* testFunction ) 
 {
+	Q_UNUSED( message );
+	Q_UNUSED( testFunction );
 }
 
 /*! 
@@ -98,6 +104,8 @@ void Output::onWarnMessageAdded( Message* message, TestFunction* testFunction )
 */
 void Output::onFailMessageAdded( Message* message, TestFunction* testFunction ) 
 {
+	Q_UNUSED( message );
+	Q_UNUSED( testFunction );
 }
 
 /*! 

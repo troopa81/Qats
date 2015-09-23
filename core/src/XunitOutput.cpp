@@ -94,6 +94,8 @@ void XunitOutput::onTestCaseStarted( TestCase* testCase )
 */
 void XunitOutput::onTestCaseEnded( TestCase* testCase ) 
 {
+	Q_UNUSED( testCase );
+
 	_testSuitesNbTests += _testSuiteNbTests;
 	_testSuitesNbErrors += _testSuiteNbErrors;
 	_testSuitesNbFailures += _testSuiteNbFailures;
@@ -122,6 +124,8 @@ void XunitOutput::onTestFunctionStarted( TestFunction* testFunction )
 */
 void XunitOutput::onTestFunctionPassed( TestFunction* testFunction ) 
 {
+	Q_UNUSED( testFunction );
+
 	_testCaseDom.setAttribute( "time", QString::number( _testCaseStart.secsTo( QDateTime::currentDateTime() ) ) );
 }
 

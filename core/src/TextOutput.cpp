@@ -104,6 +104,8 @@ void TextOutput::onTestFunctionStarted( TestFunction* testFunction )
 */
 void TextOutput::onTestFunctionPassed( TestFunction* testFunction ) 
 {
+	Q_UNUSED( testFunction );
+
 	_out << "PASS : OK" << "\n";
 	_out.flush();
 }
@@ -113,6 +115,8 @@ void TextOutput::onTestFunctionPassed( TestFunction* testFunction )
 */
 void TextOutput::onWarnMessageAdded( Message* message, TestFunction* testFunction ) 
 {
+	Q_UNUSED( testFunction );
+
 	_out << "WARN : " << qPrintable( message->getMessage() ) << "\n";
 	_out << qPrintable( backtraceToString( message ) );
 	_out.flush();
@@ -123,6 +127,8 @@ void TextOutput::onWarnMessageAdded( Message* message, TestFunction* testFunctio
 */
 void TextOutput::onFailMessageAdded( Message* message, TestFunction* testFunction ) 
 {
+	Q_UNUSED( testFunction );
+
 	_out << "FAIL : " << qPrintable( message->getMessage() ) << "\n";
 	_out << qPrintable( backtraceToString( message ) );
 	_out.flush();
