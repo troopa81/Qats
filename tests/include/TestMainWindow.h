@@ -48,8 +48,7 @@ class QATS_EXPORT TestMainWindow : public QMainWindow
   protected slots:
 
 	  void on__openDialog_clicked();
-	  void onTestActionTriggered();
-	  void onToolBarActionTriggered();
+	  void onActionTriggered();
 
   protected: 
 

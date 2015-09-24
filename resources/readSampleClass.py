@@ -71,6 +71,8 @@ def parseCppHeader( cppHeader, outputDir ):
             continue;
 
         protoClassName = className + "Prototype"
+        
+        print( "Generate " + protoClassName + "..." );
 
         f = open( os.path.join( outputDir, protoClassName + ".h" ),'w')
         f.write("#ifndef _" + protoClassName.upper() + "_\n");
@@ -220,8 +222,9 @@ try:
 #        "qtbase/src/widgets/widgets/qmenu.h",
 #"qtbase/src/widgets/widgets/qcombobox.h",
 #"qtbase/src/widgets/widgets/qscrollbar.h",
-"qtbase/src/widgets/widgets/qframe.h"
-        ]
+#"qtbase/src/widgets/widgets/qframe.h",
+#"qtbase/src/widgets/widgets/qframe.h"
+"qtbase/src/widgets/kernel/qaction.h"      ]
 
     for qtFile in qtFiles:
 

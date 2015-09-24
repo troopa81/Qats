@@ -201,7 +201,8 @@ void MainWindow::addBacktraceItems( QStandardItem* root, const QString& strBackt
 	QList<Test::BacktraceElt> backtrace = Test::parseBacktrace( strBacktrace );
 
 	// remove 3 first elements and last one because useless
-	for( int i=3; i<backtrace.count()-1; i++ )
+	//for( int i=3; i<backtrace.count()-1; i++ )
+	for( int i=0; i<backtrace.count(); i++ )
 	{
 		Test::BacktraceElt backtraceElt = backtrace.at( i ); 
 		QFileInfo fileInfo( backtraceElt._filePath );

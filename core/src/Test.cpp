@@ -69,6 +69,7 @@
 #include "QComboBoxPrototype.h"
 #include "QScrollBarPrototype.h"
 #include "QFramePrototype.h"
+#include "QActionPrototype.h"
 // #include "QElapsedTimerPrototype.h"
 //#include "QContextMenuEventPrototype.h"
 
@@ -208,6 +209,7 @@ int Test::executeTest(const QString& scriptFilePath, int delay )
 	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QComboBox*>(), Test::get()->_scriptEngine->newQObject(new QComboBoxPrototype) );
 	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QScrollBar*>(), Test::get()->_scriptEngine->newQObject(new QScrollBarPrototype) );
 	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QFrame*>(), Test::get()->_scriptEngine->newQObject(new QFramePrototype) );
+	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QAction*>(), Test::get()->_scriptEngine->newQObject(new QActionPrototype) );
 
 	// Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QElaspedTimer*>(), Test::get()->_scriptEngine->newQObject(new QElapsedTimerPrototype) );
 	//Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QContextMenuEvent*>(), Test::get()->_scriptEngine->newQObject(new QContextMenuEventPrototype) );
@@ -263,7 +265,7 @@ bool Test::evaluateScript( const QString& fileName )
 	{
 		sendMessage( FAIL, QStringList() << QString( "Error while script evaluation '%1'" ).arg( scriptValue.toString() )
 					 // TODO : backtrace won't display in MainWindow because we squeeze 3 first one and last one
-					 << QString( "%1:%2" ).arg( fileName ).arg( _scriptEngine->uncaughtExceptionLineNumber() ) );
+					 << QString( "() at %1:%2" ).arg( fileName ).arg( _scriptEngine->uncaughtExceptionLineNumber() ) );
 		return false;
 	}
 
@@ -315,6 +317,8 @@ void Test::setQatsFilePath( const QString& qatsFilePath )
 */
 QList<Test::BacktraceElt> Test::parseBacktrace( const QString& strBacktrace )
 {
+	qDebug() << "strBacktrace=" << strBacktrace;
+
 	QRegularExpression re( "([^\\(]*)\\(([^\\)]*)\\) at ([^,]*),{0,1}" );
 	QRegularExpressionMatchIterator itMatch = re.globalMatch( strBacktrace );
 	QList<Test::BacktraceElt> backtrace;

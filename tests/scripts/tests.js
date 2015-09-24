@@ -27,6 +27,7 @@ var myTest = {
 	{
 	},
 
+/*
 	toolBarAction: function()
 	{
 		mainWindow = Qats.getMainWindow();
@@ -43,7 +44,7 @@ var myTest = {
 
 		Qats.executeActionFromQToolBar( toolBarAction );
 
-		qVerify( testLabel.text == "ToolBarActionTriggered" ) 
+		qVerify( testLabel.text == "toolBarActionTriggered" ) 
 	},
 
 	treeWidgetSelect: function()
@@ -59,7 +60,7 @@ var myTest = {
 
 		Qats.selectFromQAbsractItemView( treeWidget, index );
 	},
-
+*/
 	treeWidgetAction: function()
 	{
 		mainWindow = Qats.getMainWindow();
@@ -71,17 +72,32 @@ var myTest = {
 		index = Qats.getIndexFromPath( treeWidget, [ "foo", "bar", "to.*" ] );
 		qVerify( index && index.isValid() );
 
-		testAction = mainWindow.findChild( "testAction" );
-		qVerify( testAction );
-
-		Qats.executeActionFromQAbsractItemView( treeWidget, index, testAction );
+		QatsItemView.executeAction( treeWidget, index, "testAction" );
 
 		dialogLabel = mainWindow.findChild( "_testLabel" );
 		qVerify( dialogLabel );
 
-		qCompare( dialogLabel.text, "ActionTriggered" );
+		qCompare( dialogLabel.text, "testActionTriggered" );
 	},
 
+	treeWidgetSubMenuAction: function()
+	{
+		treeWidget = Qats.findGuiObject( "_treeWidget" );
+		qVerify( treeWidget );
+
+		index = Qats.getIndexFromPath( treeWidget, [ "foo", "bar", "to.*" ] );
+		qVerify( index ); 
+		qVerify( index.isValid() );
+
+		QatsItemView.executeAction( treeWidget, index, "testSubMenuAction", [ "France", "Toulouse" ] );
+
+		dialogLabel = Qats.findGuiObject( "_testLabel" );
+		qVerify( dialogLabel );
+
+		qCompare( dialogLabel.text, "toulouseActionTriggered" );
+	},
+
+/*
 	lineEditTypeText: function()
 	{
 		mainWindow = Qats.getMainWindow();
@@ -123,7 +139,7 @@ var myTest = {
 		// TODO try with string instead of index! 
 		QatsComboBox.select( comboBox, 2 );
 	},
-
+*/
 	cleanupTestCase: function() {}
 };
 

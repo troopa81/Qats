@@ -42,15 +42,48 @@ TestMainWindow::TestMainWindow( QWidget* parent )
 
 	_ui->_treeWidget->setContextMenuPolicy(Qt::ActionsContextMenu);
 
-	QAction* testAction = new QAction( "Test action", _ui->_treeWidget );
-	testAction->setObjectName( "testAction" );
-	_ui->_treeWidget->addAction( testAction );
-	connect( testAction, &QAction::triggered, this, &TestMainWindow::onTestActionTriggered );
+	// build tree view ation
+	QAction* action = new QAction( "Test action", _ui->_treeWidget );
+	action->setObjectName( "testAction" );
+	_ui->_treeWidget->addAction( action );
+	connect( action, &QAction::triggered, this, &TestMainWindow::onActionTriggered );
 
-	QAction* toolBarAction = new QAction( "ToolBar Action", _ui->_toolBar );
-	toolBarAction->setObjectName( "toolBarAction" ); 
-	_ui->_toolBar->addAction( toolBarAction );
-	connect( toolBarAction, &QAction::triggered, this, &TestMainWindow::onToolBarActionTriggered );
+	// build tree view sub menu action
+	action = new QAction( "Test Submenu action", _ui->_treeWidget );
+	action->setObjectName( "testSubMenuAction" );
+	_ui->_treeWidget->addAction( action );
+
+	QMenu* rootMenu = new QMenu;
+	action->setMenu( rootMenu );
+
+	action = rootMenu->addAction( "Spain" );
+	QMenu* menu = new QMenu; 
+	action->setMenu( menu ); 
+	menu->addAction( "Madrid" );
+	menu->addAction( "Barcelone" );
+	menu->addAction( "Bilbao" );
+
+	action = rootMenu->addAction( "England" );
+	menu = new QMenu; 
+	action->setMenu( menu ); 
+	menu->addAction( "London" );
+	menu->addAction( "Manchester" );
+	menu->addAction( "Liverpool" );
+
+	action = rootMenu->addAction( "France" );
+	menu = new QMenu; 
+	action->setMenu( menu ); 
+	menu->addAction( "Marseille" );
+	menu->addAction( "Paris" );
+	action = menu->addAction( "Toulouse" );
+	action->setObjectName( "toulouseAction" );
+	connect( action, &QAction::triggered, this, &TestMainWindow::onActionTriggered );
+
+	// build tool bar action
+	action = new QAction( "ToolBar Action", _ui->_toolBar );
+	action->setObjectName( "toolBarAction" ); 
+	_ui->_toolBar->addAction( action );
+	connect( action, &QAction::triggered, this, &TestMainWindow::onActionTriggered );
 }
 
 /*! 
@@ -72,19 +105,11 @@ void TestMainWindow::on__openDialog_clicked()
 }
 
 /*! 
-  called whenever test action is triggered
+  call whenever an action has been triggered
 */
-void TestMainWindow::onTestActionTriggered()
+void TestMainWindow::onActionTriggered()
 {
-	_ui->_testLabel->setText( "ActionTriggered" );
-}
-
-/*! 
-  called whenever tool bar action has been triggered
-*/
-void TestMainWindow::onToolBarActionTriggered()
-{
-	_ui->_testLabel->setText( "ToolBarActionTriggered" );
+	_ui->_testLabel->setText( sender()->objectName() + "Triggered" );
 }
 
 }

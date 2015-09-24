@@ -385,9 +385,13 @@ Qats.findDataInQTableView = function( tableView, data )
 	return null;
 }
 
-Qats.triggerMenuAction = function( action )
+/*!
+  trigger \param action from \param menu
+  if \param menu is null, we get the top level menu
+*/
+Qats.triggerMenuAction = function( action, menu )
 {
-	menu = Qats.getTopLevelWidget( "QMenu" );
+	menu = menu ? menu : Qats.getTopLevelWidget( "QMenu" );
 	qVerify( menu )
 	qVerify( menu.visible )
 
@@ -423,25 +427,6 @@ Qats.waitFor = function( conditionFunction, timeout )
 	}
 	
 	qVerify( conditionFunction() );
-}
-
-Qats.executeActionFromQAbsractItemView = function( itemView, index, action )
-{
-	var rect = itemView.visualRect( index ); 
-	qVerify( rect.isValid() );
-	
-	var center = rect.center();
-	qVerify( !center.isNull() );
-
-	var app = QApplication.instance();
-	qVerify( app );
-
-	Qats.delayedAction( function(){ Qats.triggerMenuAction( action ) }, Qats.isMenuVisible );
-
-	QTest.mouseClick( itemView.viewport(), Qt.RightButton, Qt.NoModifier, center );
-	QTest.mouseMove( itemView.viewport(), center );
-	QTest.postContextMenuEvent( itemView.viewport(), center );
-	QApplication.processEvents();
 }
 
 Qats.selectFromQAbsractItemView = function( itemView, index )
@@ -506,6 +491,17 @@ QatsComboBox.select = function( comboBox, value )
 	Qats.waitFor( function() { return !view.isVisible() } );
 }
 
+/*!
+  find and \return any gui object (widget, action, menu) according to his name \param objectName
+*/
+Qats.findGuiObject = function( objectName )
+{
+	mainWindow = Qats.getMainWindow();
+	qVerify( mainWindow );
+	
+	return mainWindow.findChild( objectName );
+}
+
 QatsItemView = {}
 QatsItemView.setChecked = function( itemView, index, isChecked )
 {
@@ -525,3 +521,91 @@ QatsItemView.setChecked = function( itemView, index, isChecked )
 	model.setData( index, isChecked ? Qt.Checked : Qt.Unchecked, 10 );
 }
 
+/*!
+  Execute en action from an item view for a given \param index
+  \param itemView could be either an objet that extend QAbstractItemView or the item view object name
+  \param action could be a QAction object or an action object name.
+*/
+QatsItemView.executeAction = function( itemView, index, action, subMenuActions )
+{
+	qVerify( itemView );
+	itemView = typeof itemView === 'string' ? Qats.findGuiObject( itemView ) : itemView;
+	qVerify( itemView );
+	qVerify( itemView.inherits( "QAbstractItemView" ) );
+
+	qVerify( action ); 
+	action = typeof action === 'string' ? Qats.findGuiObject( action ) : action;
+	qVerify( action ); 
+	qVerify( action.inherits( "QAction" ) );
+
+	qVerify( index );
+	qVerify( index.isValid() );
+
+	subMenuActions = subMenuActions ? subMenuActions : [];
+
+	var rect = itemView.visualRect( index ); 
+	qVerify( rect.isValid() );
+	
+	var center = rect.center();
+	qVerify( !center.isNull() );
+
+	// create an array for all actions to be clicked
+	var actions = [ action ]; 
+	for( var iSubMenuAction = 0; iSubMenuAction<subMenuActions.length; iSubMenuAction++ )
+	{
+		var currentAction = actions[ actions.length - 1 ];
+		var menu = currentAction.menu(); 
+
+		// search for action in current menu child actions
+		var subMenuAction = null;
+		var children = menu.children();
+		for( var i=0; i<children.length; i++ )
+		{
+			var child = children[ i ];
+			if( child.inherits( "QAction" ) && child.text == subMenuActions[ iSubMenuAction ] )
+			{
+				actions.push( child );
+			}
+		}
+
+		qVerify( !subMenuAction, "Cannot find item '" + subMenuActions[ iSubMenuAction ] + "'" );
+	}
+
+	var iAction = 0;
+
+	// define a delayedAction function to click on action
+	function clickAction()
+	{
+		// the menu containing the current action
+		var currentMenu = iAction > 0 ? actions[ iAction-1 ].menu() : Qats.getTopLevelWidget( "QMenu" ); 
+		qVerify( currentMenu );
+		qVerify( currentMenu.visible );
+
+		// the action to be clicked next
+		var currentAction = actions[ iAction++ ]; 
+		qVerify( currentAction );
+
+		// the menu containing the next action
+		var nextMenu = currentAction.menu(); 
+
+		// the next action to be clicked
+		var nextAction = iAction < actions.length ? actions[ iAction ] : null;
+		if ( nextAction )
+		{
+			qVerify( nextMenu );
+			Qats.delayedAction( clickAction, function(){ return nextMenu.visible } );
+		}
+		
+		Qats.triggerMenuAction( currentAction, currentMenu );
+	}
+
+	Qats.delayedAction( clickAction, Qats.isMenuVisible );
+
+	QTest.mouseClick( itemView.viewport(), Qt.RightButton, Qt.NoModifier, center );
+
+	// Move is mandatory because else, menu is displayed under mouse position, everywhere on the 
+	// desktop
+	QTest.mouseMove( itemView.viewport(), center );
+	QTest.postContextMenuEvent( itemView.viewport(), center );
+	QApplication.processEvents();
+}
