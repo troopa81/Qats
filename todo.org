@@ -84,6 +84,9 @@
 	- Better display
 	- display backtrace
 	- test compare and verfiy output (keeps \n?)
+*** TODO array as arguments
+	All functions that take an array as arguments can take only an item as argument
+	QatsItemView.executeAction for example.
 ** Bugs
 *** TODO TextOutput formatting
 	Take care of line number (30 != 100) in characters count to have aligned displays
