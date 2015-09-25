@@ -171,6 +171,7 @@ int Test::executeTest(const QString& scriptFilePath, int delay )
 	qScriptRegisterSequenceMetaType< QWidgetList >(Test::get()->_scriptEngine);
 	qScriptRegisterSequenceMetaType< QObjectList >(Test::get()->_scriptEngine);
 	qScriptRegisterSequenceMetaType< QModelIndexList >(Test::get()->_scriptEngine);
+	qScriptRegisterSequenceMetaType< QList<QAction*> >(Test::get()->_scriptEngine);
 
 
 	QScriptValue scriptTestObject = Test::get()->_scriptEngine->newQObject(Test::get());
@@ -317,8 +318,6 @@ void Test::setQatsFilePath( const QString& qatsFilePath )
 */
 QList<Test::BacktraceElt> Test::parseBacktrace( const QString& strBacktrace )
 {
-	qDebug() << "strBacktrace=" << strBacktrace;
-
 	QRegularExpression re( "([^\\(]*)\\(([^\\)]*)\\) at ([^,]*),{0,1}" );
 	QRegularExpressionMatchIterator itMatch = re.globalMatch( strBacktrace );
 	QList<Test::BacktraceElt> backtrace;

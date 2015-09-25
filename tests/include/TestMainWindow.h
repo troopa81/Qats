@@ -28,6 +28,8 @@
 
 #include <Qats.h>
 
+class QAction; 
+
 namespace Ui
 {
 class TestMainWindow;
@@ -48,12 +50,16 @@ class QATS_EXPORT TestMainWindow : public QMainWindow
   protected slots:
 
 	  void on__openDialog_clicked();
+	  void on__treeWidgetCustomContextMenu_customContextMenuRequested( const QPoint& pos );
 	  void onActionTriggered();
 
   protected: 
 
-	Ui::TestMainWindow* _ui; 
+	  void initMenuActions();
 
+	  Ui::TestMainWindow* _ui; 
+	  QAction* _testAction; 
+	  QAction* _testSubMenuAction;
 };
 
 };

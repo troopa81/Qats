@@ -20,6 +20,8 @@
 **
 ****************************************************************************/
 
+#include <QDebug>
+
 #include <QMessageBox>
 #include <QAction>
 
@@ -34,50 +36,27 @@ namespace qats
   \brief This class is used for testing the Qats application
 */
 
+/*! 
+  Constructor
+  \param parent parent object
+*/
 TestMainWindow::TestMainWindow( QWidget* parent )
-: QMainWindow( parent )
+	: QMainWindow( parent ),
+	  _testAction( 0 ),
+	  _testSubMenuAction( 0 )
 {
+	QAction* action = 0; 
+
 	_ui = new Ui::TestMainWindow;
 	_ui->setupUi( this );
 
+	initMenuActions();
+
 	_ui->_treeWidget->setContextMenuPolicy(Qt::ActionsContextMenu);
+	_ui->_treeWidget->addAction( _testAction );
+	_ui->_treeWidget->addAction( _testSubMenuAction );
 
-	// build tree view ation
-	QAction* action = new QAction( "Test action", _ui->_treeWidget );
-	action->setObjectName( "testAction" );
-	_ui->_treeWidget->addAction( action );
-	connect( action, &QAction::triggered, this, &TestMainWindow::onActionTriggered );
-
-	// build tree view sub menu action
-	action = new QAction( "Test Submenu action", _ui->_treeWidget );
-	action->setObjectName( "testSubMenuAction" );
-	_ui->_treeWidget->addAction( action );
-
-	QMenu* rootMenu = new QMenu;
-	action->setMenu( rootMenu );
-
-	action = rootMenu->addAction( "Spain" );
-	QMenu* menu = new QMenu; 
-	action->setMenu( menu ); 
-	menu->addAction( "Madrid" );
-	menu->addAction( "Barcelone" );
-	menu->addAction( "Bilbao" );
-
-	action = rootMenu->addAction( "England" );
-	menu = new QMenu; 
-	action->setMenu( menu ); 
-	menu->addAction( "London" );
-	menu->addAction( "Manchester" );
-	menu->addAction( "Liverpool" );
-
-	action = rootMenu->addAction( "France" );
-	menu = new QMenu; 
-	action->setMenu( menu ); 
-	menu->addAction( "Marseille" );
-	menu->addAction( "Paris" );
-	action = menu->addAction( "Toulouse" );
-	action->setObjectName( "toulouseAction" );
-	connect( action, &QAction::triggered, this, &TestMainWindow::onActionTriggered );
+	_ui->_treeWidgetCustomContextMenu->setContextMenuPolicy(Qt::CustomContextMenu);
 
 	// build tool bar action
 	action = new QAction( "ToolBar Action", _ui->_toolBar );
@@ -110,6 +89,62 @@ void TestMainWindow::on__openDialog_clicked()
 void TestMainWindow::onActionTriggered()
 {
 	_ui->_testLabel->setText( sender()->objectName() + "Triggered" );
+}
+
+/*! 
+  initialize the different menu actions
+*/
+void TestMainWindow::initMenuActions()
+{
+	QAction* action = 0;
+
+	// build tree view ation
+	_testAction = new QAction( "Test action", _ui->_treeWidget );
+	_testAction->setObjectName( "testAction" );
+	connect( _testAction, &QAction::triggered, this, &TestMainWindow::onActionTriggered );
+
+	// build tree view sub menu action
+	_testSubMenuAction = new QAction( "Test Submenu action", _ui->_treeWidget );
+	_testSubMenuAction->setObjectName( "testSubMenuAction" );
+
+	QMenu* rootMenu = new QMenu;
+	_testSubMenuAction->setMenu( rootMenu );
+
+	action = rootMenu->addAction( "Spain" );
+	QMenu* menu = new QMenu; 
+	action->setMenu( menu ); 
+	menu->addAction( "Madrid" );
+	menu->addAction( "Barcelone" );
+	menu->addAction( "Bilbao" );
+
+	action = rootMenu->addAction( "England" );
+	menu = new QMenu; 
+	action->setMenu( menu ); 
+	menu->addAction( "London" );
+	menu->addAction( "Manchester" );
+	menu->addAction( "Liverpool" );
+
+	action = rootMenu->addAction( "France" );
+	menu = new QMenu; 
+	action->setMenu( menu ); 
+	menu->addAction( "Marseille" );
+	menu->addAction( "Paris" );
+	action = menu->addAction( "Toulouse" );
+	action->setObjectName( "toulouseAction" );
+	connect( action, &QAction::triggered, this, &TestMainWindow::onActionTriggered );
+}
+
+/*! 
+  call whenever a custom menu is request on _treeWidgetCustomContextMenu
+*/
+void TestMainWindow::on__treeWidgetCustomContextMenu_customContextMenuRequested( const QPoint& pos )
+{
+	QMenu* menu = new QMenu( _ui->_treeWidgetCustomContextMenu ); 
+
+	menu->addAction( _testAction );
+	menu->addAction( _testSubMenuAction );
+
+	menu->popup( _ui->_treeWidgetCustomContextMenu->mapToGlobal( pos ) );
 }
 
 }

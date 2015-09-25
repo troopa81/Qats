@@ -29,16 +29,19 @@
 #include <QScriptEngine>
 #include <QMenu>
 
+#include "QWidgetPrototype.h"
+
+
 namespace qats
 {
 
-class QMenuPrototype : public QObject, public QScriptable
+class QMenuPrototype : public QWidgetPrototype
 {
 Q_OBJECT
 
 public:
 
-QMenuPrototype(QObject* parent = 0):QObject(parent){}
+QMenuPrototype(QObject* parent = 0):QWidgetPrototype(parent){}
 public slots:
 
 QAction * addAction(const QString & text)

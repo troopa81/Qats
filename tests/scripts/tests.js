@@ -27,7 +27,6 @@ var myTest = {
 	{
 	},
 
-/*
 	toolBarAction: function()
 	{
 		mainWindow = Qats.getMainWindow();
@@ -60,7 +59,7 @@ var myTest = {
 
 		Qats.selectFromQAbsractItemView( treeWidget, index );
 	},
-*/
+
 	treeWidgetAction: function()
 	{
 		mainWindow = Qats.getMainWindow();
@@ -72,7 +71,7 @@ var myTest = {
 		index = Qats.getIndexFromPath( treeWidget, [ "foo", "bar", "to.*" ] );
 		qVerify( index && index.isValid() );
 
-		QatsItemView.executeAction( treeWidget, index, "testAction" );
+		QatsItemView.executeAction( treeWidget, index, [ "testAction" ] );
 
 		dialogLabel = mainWindow.findChild( "_testLabel" );
 		qVerify( dialogLabel );
@@ -89,7 +88,7 @@ var myTest = {
 		qVerify( index ); 
 		qVerify( index.isValid() );
 
-		QatsItemView.executeAction( treeWidget, index, "testSubMenuAction", [ "France", "Toulouse" ] );
+		QatsItemView.executeAction( treeWidget, index, [ "testSubMenuAction", "France", "Toulouse" ] );
 
 		dialogLabel = Qats.findGuiObject( "_testLabel" );
 		qVerify( dialogLabel );
@@ -97,7 +96,42 @@ var myTest = {
 		qCompare( dialogLabel.text, "toulouseActionTriggered" );
 	},
 
-/*
+	treeWidgetNonBlockingContextMenuAction: function()
+	{
+		mainWindow = Qats.getMainWindow();
+		qVerify( mainWindow );
+
+		treeWidget = mainWindow.findChild( "_treeWidgetCustomContextMenu" );
+		qVerify( treeWidget );
+
+		index = Qats.getIndexFromPath( treeWidget, [ "foo", "bar", "to.*" ] );
+		qVerify( index && index.isValid() );
+
+		QatsItemView.executeAction( treeWidget, index, [ "testAction" ], false );
+
+		dialogLabel = mainWindow.findChild( "_testLabel" );
+		qVerify( dialogLabel );
+
+		qCompare( dialogLabel.text, "testActionTriggered" );
+	},
+
+	treeWidgetNonBlockingContextMenuSubMenuAction: function()
+	{
+		treeWidget = Qats.findGuiObject( "_treeWidgetCustomContextMenu" );
+		qVerify( treeWidget );
+
+		index = Qats.getIndexFromPath( treeWidget, [ "foo", "bar", "to.*" ] );
+		qVerify( index ); 
+		qVerify( index.isValid() );
+
+		QatsItemView.executeAction( treeWidget, index, [ "testSubMenuAction", "France", "Toulouse" ], false );
+
+		dialogLabel = Qats.findGuiObject( "_testLabel" );
+		qVerify( dialogLabel );
+
+		qCompare( dialogLabel.text, "toulouseActionTriggered" );
+	},
+
 	lineEditTypeText: function()
 	{
 		mainWindow = Qats.getMainWindow();
@@ -127,7 +161,6 @@ var myTest = {
 		QTest.mouseClick( openDialogBtn, Qt.LeftButton ); 
 	},
 
-
 	comboBoxSelect: function()
 	{
 		mainWindow = Qats.getMainWindow();
@@ -139,7 +172,7 @@ var myTest = {
 		// TODO try with string instead of index! 
 		QatsComboBox.select( comboBox, 2 );
 	},
-*/
+
 	cleanupTestCase: function() {}
 };
 
