@@ -52,7 +52,8 @@ class QATS_EXPORT TestMainWindow : public QMainWindow
 	  void on__openDialog_clicked();
 	  void on__treeWidgetCustomContextMenu_customContextMenuRequested( const QPoint& pos );
 	  void onActionTriggered();
-
+	  void onDialogActionTriggered();
+	
   protected: 
 
 	  void initMenuActions();
@@ -60,6 +61,7 @@ class QATS_EXPORT TestMainWindow : public QMainWindow
 	  Ui::TestMainWindow* _ui; 
 	  QAction* _testAction; 
 	  QAction* _testSubMenuAction;
+	  QAction* _dialogAction;
 };
 
 };

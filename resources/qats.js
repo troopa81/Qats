@@ -256,7 +256,10 @@ Qats.activeDialogVisible = function()
 Qats.acceptDialog = function()
 {
 	dialog = Qats.activeDialog();
+	qVerify( dialog );
+
 	QTest.keyClick( dialog, Qt.Key_Enter );
+	qVerify( !dialog.visible );
 }
 
 Qats.delayedAction = function( action, triggerCondition, timeout )
@@ -522,160 +525,6 @@ QatsItemView.setChecked = function( itemView, index, isChecked )
 	model.setData( index, isChecked ? Qt.Checked : Qt.Unchecked, 10 );
 }
 
-/*!
-  Execute en action from an item view for a given \param index
-  \param itemView could be either an objet that extend QAbstractItemView or the item view object name
-  \param actions could be a : 
-     - a QAction object 
-	 - an action object name
-	 - an action text
-	 - a list of the 3 previous options
-*/
-QatsItemView.executeActionOld = function( itemView, index, pActions )
-{
-	// get item view
-	qVerify( itemView );
-	itemView = typeof itemView === 'string' ? Qats.findGuiObject( itemView ) : itemView;
-	qVerify( itemView );
-	qVerify( itemView.inherits( "QAbstractItemView" ) );
-
-	// be sure there is a context menu
-	qVerify( itemView.contextMenuPolicy != Qt.NoContextMenu );
-	qVerify( itemView.contextMenuPolicy != Qt.PreventContextMenu );
-
-
-//	qVerify( action ); 
-//	action = typeof action === 'string' ? Qats.findGuiObject( action ) : action;
-//	qVerify( action ); 
-//	qVerify( action.inherits( "QAction" ) );
-
-	qVerify( index );
-	qVerify( index.isValid() );
-
-	qVerify( pActions );
-
-	var rect = itemView.visualRect( index ); 
-	qVerify( rect.isValid() );
-	
-	var center = rect.center();
-	qVerify( !center.isNull() );
-
-	// create an array for all actions to be clicked
-	var actions = [];
-	for( var iAction = 0; iAction<pActions.length; iAction++ )
-	{
-		qVerify( pActions[ iAction ] );
-
-		// action object name or text
-		var subMenuAction = null;
-		if ( typeof pActions[ iAction ] === 'string' )
-		{
-			var subActionName = pActions[ iAction ]
-			var subActions = null; 
-
-			// look action in previous action menu
-			if ( iAction > 0 )
-			{
-				qVerify( iAction < actions.length );
-
-				var menu = actions[ iAction - 1 ].menu(); 
-				qVerify( menu, "Cannot find item '" + subActionName + "'" );
-				
-				subActions = menu.actions(); 
-			}
-			// look action in item view menu
-			else
-			{
-				subActions = itemView.actions();
-			}
-
-			qVerify( subActions );
-
-
-			// search for action
-			for( var i=0; i<subActions.length; i++ )
-			{
-				var subAction = subActions[ i ];
-				if( subAction.inherits( "QAction" ) && ( subAction.text == subActionName 
-														 || subAction.objectName == subActionName ) )
-				{
-					subMenuAction = subAction;
-				}
-			}
-			qVerify( subMenuAction, "Cannot find item '" + subActionName + "'" );
-		}
-		// action object
-		else
-		{
-			qverify( pActions[ i ].inherits( "QAction" ) ); 
-			subMenuAction = pActions[ i ]; 
-		}
-		
-		actions.push( subMenuAction );
-	}
-
-	qWarn( "actions=" + actions );
-
-	var iAction = 0;
-
-	var blockingContextMenu = ( itemView.contextMenuPolicy == Qt.DefaultContextMenu 
-							   || itemView.contextMenuPolicy == Qt.ActionsContextMenu );
-
-	qWarn( "itemView.contextMenuPolicy=" + itemView.contextMenuPolicy + " blockingContextMenu=" + blockingContextMenu );
-
-	// define a delayedAction function to click on action
-	function clickAction()
-	{
-		// the menu containing the current action
-		var currentMenu = iAction > 0 ? actions[ iAction-1 ].menu() : Qats.getTopLevelWidget( "QMenu" ); 
-		qVerify( currentMenu );
-		qVerify( currentMenu.visible );
-
-		// the action to be clicked next
-		var currentAction = actions[ iAction++ ]; 
-		qVerify( currentAction );
-
-		// the menu containing the next action
-		var nextMenu = currentAction.menu(); 
-
-		// the next action to be clicked
-		var nextAction = iAction < actions.length ? actions[ iAction ] : null;
-		if ( nextAction ) 
-		{
-			qVerify( nextMenu );
-		}
-
-		if ( nextAction && blockingContextMenu )
-		{
-			Qats.delayedAction( clickAction, function(){ return nextMenu.visible } );
-		}
-		
-		Qats.triggerMenuAction( currentAction, currentMenu );
-
-		if ( nextAction && !blockingContextMenu )
-		{
-			clickAction();
-		}
-	}
-
-	if ( blockingContextMenu )
-	{
-		Qats.delayedAction( clickAction, Qats.isMenuVisible );
-	}
-
-	// Move is mandatory because else, menu is displayed under mouse position, everywhere on the 
-	// desktop
-	QTest.mouseClick( itemView.viewport(), Qt.RightButton, Qt.NoModifier, center );
-	QTest.mouseMove( itemView.viewport(), center );
-	QTest.postContextMenuEvent( itemView.viewport(), center );
-	QApplication.processEvents();
-
-	if ( !blockingContextMenu )
-	{
-		clickAction();
-	}
-}
-
 /*! 
   find and \return action according to action description given as argument and contextual menu 
   containing the action
@@ -743,6 +592,7 @@ QatsItemView.executeAction = function( itemView, index, actions, blockingContext
 	qVerify( index.isValid() );
 
 	qVerify( actions );
+	actions = [].concat( actions );
 
 	var rect = itemView.visualRect( index ); 
 	qVerify( rect.isValid() );
@@ -812,4 +662,7 @@ QatsItemView.executeAction = function( itemView, index, actions, blockingContext
 		Qats.waitFor( Qats.isMenuVisible );
 		clickAction();
 	}
+
+	// in any case, we have to wait that no menu is no longer visible
+	Qats.waitFor( function(){ return !Qats.isMenuVisible(); } );
 }

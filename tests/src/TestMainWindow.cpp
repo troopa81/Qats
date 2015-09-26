@@ -21,6 +21,7 @@
 ****************************************************************************/
 
 #include <QDebug>
+#include <QThread>
 
 #include <QMessageBox>
 #include <QAction>
@@ -55,6 +56,7 @@ TestMainWindow::TestMainWindow( QWidget* parent )
 	_ui->_treeWidget->setContextMenuPolicy(Qt::ActionsContextMenu);
 	_ui->_treeWidget->addAction( _testAction );
 	_ui->_treeWidget->addAction( _testSubMenuAction );
+	_ui->_treeWidget->addAction( _dialogAction );
 
 	_ui->_treeWidgetCustomContextMenu->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -99,12 +101,12 @@ void TestMainWindow::initMenuActions()
 	QAction* action = 0;
 
 	// build tree view ation
-	_testAction = new QAction( "Test action", _ui->_treeWidget );
+	_testAction = new QAction( "Test action", this );
 	_testAction->setObjectName( "testAction" );
 	connect( _testAction, &QAction::triggered, this, &TestMainWindow::onActionTriggered );
 
 	// build tree view sub menu action
-	_testSubMenuAction = new QAction( "Test Submenu action", _ui->_treeWidget );
+	_testSubMenuAction = new QAction( "Test Submenu action", this );
 	_testSubMenuAction->setObjectName( "testSubMenuAction" );
 
 	QMenu* rootMenu = new QMenu;
@@ -132,6 +134,10 @@ void TestMainWindow::initMenuActions()
 	action = menu->addAction( "Toulouse" );
 	action->setObjectName( "toulouseAction" );
 	connect( action, &QAction::triggered, this, &TestMainWindow::onActionTriggered );
+
+	_dialogAction = new QAction( "Dialog action", this );
+	_dialogAction->setObjectName( "dialogAction" );
+	connect( _dialogAction, &QAction::triggered, this, &TestMainWindow::onDialogActionTriggered );
 }
 
 /*! 
@@ -143,8 +149,21 @@ void TestMainWindow::on__treeWidgetCustomContextMenu_customContextMenuRequested(
 
 	menu->addAction( _testAction );
 	menu->addAction( _testSubMenuAction );
+	menu->addAction( _dialogAction );
 
 	menu->popup( _ui->_treeWidgetCustomContextMenu->mapToGlobal( pos ) );
+}
+
+/*! 
+  called whenever user select _dialogAction
+*/
+void TestMainWindow::onDialogActionTriggered()
+{
+	QMessageBox msgBox;
+	msgBox.setText("Test Dialog");
+	msgBox.exec();
+
+	_ui->_testLabel->setText( sender()->objectName() + "Triggered" );
 }
 
 }

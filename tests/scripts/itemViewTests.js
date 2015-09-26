@@ -21,32 +21,13 @@
 ****************************************************************************/
 
 var myTest = {
-    name: "GuiTests",
+    name: "ItemViewTests",
 
 	initTestCase: function() 
 	{
 	},
 
-	toolBarAction: function()
-	{
-		mainWindow = Qats.getMainWindow();
-		qVerify( mainWindow );
-
-		testLabel = mainWindow.findChild( "_testLabel" );
-		qVerify( testLabel );
-
-		// reset label
-		testLabel.text = "";
-
-		toolBarAction = mainWindow.findChild( "toolBarAction" );
-		qVerify( toolBarAction );
-
-		Qats.executeActionFromQToolBar( toolBarAction );
-
-		qVerify( testLabel.text == "toolBarActionTriggered" ) 
-	},
-
-	treeWidgetSelect: function()
+	select: function()
 	{
 		mainWindow = Qats.getMainWindow();
 		qVerify( mainWindow );
@@ -60,7 +41,7 @@ var myTest = {
 		Qats.selectFromQAbsractItemView( treeWidget, index );
 	},
 
-	treeWidgetAction: function()
+	action: function()
 	{
 		mainWindow = Qats.getMainWindow();
 		qVerify( mainWindow );
@@ -79,7 +60,7 @@ var myTest = {
 		qCompare( dialogLabel.text, "testActionTriggered" );
 	},
 
-	treeWidgetSubMenuAction: function()
+	subMenuAction: function()
 	{
 		treeWidget = Qats.findGuiObject( "_treeWidget" );
 		qVerify( treeWidget );
@@ -96,7 +77,7 @@ var myTest = {
 		qCompare( dialogLabel.text, "toulouseActionTriggered" );
 	},
 
-	treeWidgetNonBlockingContextMenuAction: function()
+	nonBlockingContextMenuAction: function()
 	{
 		mainWindow = Qats.getMainWindow();
 		qVerify( mainWindow );
@@ -115,7 +96,7 @@ var myTest = {
 		qCompare( dialogLabel.text, "testActionTriggered" );
 	},
 
-	treeWidgetNonBlockingContextMenuSubMenuAction: function()
+	nonBlockingContextMenuSubMenuAction: function()
 	{
 		treeWidget = Qats.findGuiObject( "_treeWidgetCustomContextMenu" );
 		qVerify( treeWidget );
@@ -132,47 +113,44 @@ var myTest = {
 		qCompare( dialogLabel.text, "toulouseActionTriggered" );
 	},
 
-	lineEditTypeText: function()
+	blockingMenuDialogAction: function()
 	{
-		mainWindow = Qats.getMainWindow();
-		qVerify( mainWindow );
-		
-		var text = "edition test"; 
-		var widgetName = "_lineEdit"; 
+		treeWidget = Qats.findGuiObject( "_treeWidget" );
+		qVerify( treeWidget );
 
-		Qats.typeText( mainWindow, widgetName, text );
-
-		editWidget = mainWindow.findChild( widgetName ); 
-		qVerify( editWidget );
-
-		qVerify( editWidget.text == text );
-	},
-
-	dialogYes : function()
-	{
-		mainWindow = Qats.getMainWindow();
-		qVerify( mainWindow );
-
-		openDialogBtn = mainWindow.findChild( "_openDialog" );
-		qVerify( openDialogBtn );
+		index = Qats.getIndexFromPath( treeWidget, [ "foo", "bar", "to.*" ] );
+		qVerify( index ); 
+		qVerify( index.isValid() );
 
 		Qats.delayedAction( Qats.acceptDialog, Qats.activeDialogVisible );
 
-		QTest.mouseClick( openDialogBtn, Qt.LeftButton ); 
+		QatsItemView.executeAction( treeWidget, index, "dialogAction" );
+
+		dialogLabel = Qats.findGuiObject( "_testLabel" );
+		qVerify( dialogLabel );
+
+		qCompare( dialogLabel.text, "dialogActionTriggered" );
 	},
 
-	comboBoxSelect: function()
+	nonBlockingMenuDialogAction: function()
 	{
-		mainWindow = Qats.getMainWindow();
-		qVerify( mainWindow );
-		
-		var comboBox = mainWindow.findChild( "_comboBox" );
-		qVerify( comboBox );
+		treeWidget = Qats.findGuiObject( "_treeWidgetCustomContextMenu" );
+		qVerify( treeWidget );
 
-		// TODO try with string instead of index! 
-		QatsComboBox.select( comboBox, 2 );
+		index = Qats.getIndexFromPath( treeWidget, [ "foo", "bar", "to.*" ] );
+		qVerify( index ); 
+		qVerify( index.isValid() );
+
+		Qats.delayedAction( Qats.acceptDialog, Qats.activeDialogVisible );
+
+		QatsItemView.executeAction( treeWidget, index, "dialogAction", false );
+
+		dialogLabel = Qats.findGuiObject( "_testLabel" );
+		qVerify( dialogLabel );
+
+		qCompare( dialogLabel.text, "dialogActionTriggered" );
 	},
-
+		
 	cleanupTestCase: function() {}
 };
 
