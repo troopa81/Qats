@@ -27,25 +27,42 @@ import sys
 import re
 import os
 import subprocess
+import pprint
 
 sys.path = ["../"] + sys.path
 import CppHeaderParser
 
-def findEnum( enums, enumName ):
-    for enum in enums:
-        if enum['name'] == enumName:
-            return enum
+globalEnums = {}
 
-    return None
+def findEnumFromValue( enumValueName ):
+    for (className, enums) in globalEnums.iteritems():
+        for enum in enums:
+            for enumValue in enum['values']:
+                if enumValue['name'] == enumValueName:
+                    return ( className, enum )
 
-def treatType( typeName, cppClass ):
+    return (None,None)
+
+def findEnum( enumName ):
+    for (className, enums) in globalEnums.iteritems():
+        for enum in enums:
+            if enum['name'] == enumName:
+                return ( className, enum )
+
+    return (None,None)
+
+def treatType( typeName, cppClass, keepEnum ):
 
     # BUG
     typeName = re.sub( r"__", r"::", typeName) 
 
-    enums = cppClass[ 'enums' ][ 'public' ]
-    
-    if ( findEnum( enums, typeName ) or ( typeName in cppClass[ 'typedefs' ][ 'public' ] ) ):
+    enumClassName, enum = findEnum( typeName );
+
+#    print("enumClassName="+ str(enumClassName) + " enum=" + str(enum) );
+
+    if enumClassName != None and enum != None:
+        return (enumClassName + "::" + typeName) if keepEnum else "int" ;
+    elif typeName in cppClass[ 'typedefs' ][ 'public' ]:
         return cppClass['name'] + "::" + typeName
     else:
         return typeName
@@ -74,7 +91,35 @@ def parseCppHeader( cppHeader, outputDir ):
         
         print( "Generate " + protoClassName + "..." );
 
+        cppClass = cppHeader.classes[ className ];
+        globalEnums[ className ] = cppClass[ 'enums' ][ 'public' ];
+#        pprint.PrettyPrinter().pprint(globalEnums)
         f = open( os.path.join( outputDir, protoClassName + ".h" ),'w')
+
+        ## write licence
+        f.write("/****************************************************************************\n");
+        f.write("**\n");
+        f.write("** Copyright (C) 2015 Cabieces Julien\n");
+        f.write("** Contact: https://github.com/troopa81/Qats\n");
+        f.write("**\n");
+        f.write("** This file is part of Qats.\n");
+        f.write("**\n");
+        f.write("** Qats is free software: you can redistribute it and/or modify\n");
+        f.write("** it under the terms of the GNU Lesser General Public License as published by\n");
+        f.write("** the Free Software Foundation, either version 3 of the License, or\n");
+        f.write("** (at your option) any later version.\n");
+        f.write("**\n");
+        f.write("** Qats is distributed in the hope that it will be useful,\n");
+        f.write("** but WITHOUT ANY WARRANTY; without even the implied warranty of\n");
+        f.write("** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n");
+        f.write("** GNU Lesser General Public License for more details.\n");
+        f.write("**\n");
+        f.write("** You should have received a copy of the GNU Lesser General Public License\n");
+        f.write("** along with Qats. If not, see <http://www.gnu.org/licenses/>.\n");
+        f.write("**\n");
+        f.write("****************************************************************************/\n");
+        f.write("\n");
+    
         f.write("#ifndef _" + protoClassName.upper() + "_\n");
         f.write("#define _" + protoClassName.upper() + "_\n");
     
@@ -90,7 +135,22 @@ def parseCppHeader( cppHeader, outputDir ):
         f.write("{\n")
         f.write("\n")
         
-        f.write("class " + protoClassName + " : public QObject, public QScriptable\n")
+        f.write("class " + protoClassName ); 
+
+        # get possible inheritance
+        inherited = "";
+        for inheritedClass in cppHeader.classes[ className ]['inherits']:
+            if inheritedClass['access'] == "public":
+
+                # not suppose to happen with Qt
+                if inherited != "":
+                    print( "Error : multiple inheritance" );
+
+                inherited = inheritedClass['class'] + "Prototype";
+                
+        f.write( " : public " + inherited if inherited != "" else "QObject, public QScriptable")
+
+        f.write( "\n" );
         f.write("{\n")
         f.write("Q_OBJECT\n")
         f.write("\n")
@@ -98,13 +158,12 @@ def parseCppHeader( cppHeader, outputDir ):
         f.write("public:\n")
         f.write("\n")
         
-        f.write(protoClassName + "(QObject* parent = 0):QObject(parent){}\n")
+        f.write(protoClassName + "(QObject* parent = 0):"+ (inherited if inherited != "" else "QObject") + "(parent){}\n")
         
         f.write("public slots:\n")
         f.write("\n")
         
         # public methods ...
-
         for method in cppHeader.classes[ className ][ 'methods' ][ 'public' ]:
 
             isStatic = method['static']
@@ -112,13 +171,16 @@ def parseCppHeader( cppHeader, outputDir ):
             # do not treat constructor and destructor
             if  method['constructor'] or method['destructor'] or method['name'] in [ "operator=", "operator==", "operator!=", "operator<" ]:
                 continue
-                
-            # compute return type
-            returnType = treatType( method['rtnType'], cppHeader.classes[ className ] )
-        
+
+            returnType = method['rtnType']
+
             # BUG : remove static from type
             if isStatic:
                 returnType = returnType[7:]
+                
+            # compute return type
+            returnType = treatType( returnType, cppHeader.classes[ className ], False )
+        
 
             f.write(returnType + " " + method['name'] + "(" )
 
@@ -130,9 +192,15 @@ def parseCppHeader( cppHeader, outputDir ):
                 elif iParameter > 0 :
                     del parameters[ iParameter-1 ][ 'defaultValue' ]
 
+            parametersCast = []
             for iParam in range(0, len(parameters)):
                 parameter = parameters[iParam]
-                paramType = treatType( parameter['type'], cppHeader.classes[ className ] )                
+
+                # compute parameter cast if needed
+                enumClassName, enum = findEnum( parameter['type'] );
+                parametersCast.append( enumClassName + "::" + enum['name'] if enumClassName != None and enum != None else None );
+
+                paramType = treatType( parameter['type'], cppHeader.classes[ className ], False )                
 
                 # bug in parser
                 if ( parameter['name'] == "&" ):
@@ -146,7 +214,12 @@ def parseCppHeader( cppHeader, outputDir ):
 
                 # default value if any
                 if "defaultValue" in parameter :
-                    f.write(" = " + treatType( parameter['defaultValue'], cppHeader.classes[ className ] ) )
+                    enumClassName, enum = findEnumFromValue( parameter['defaultValue'] )
+                    f.write(" = "); 
+                    if enumClassName != None and enum != None:
+                        f.write( enumClassName + "::" + parameter['defaultValue'] );
+                    else:
+                        f.write(treatType( parameter['defaultValue'], cppHeader.classes[ className ], True ) )
 
                 if ( iParam < len(parameters)-1 ):
                     f.write(",")
@@ -169,11 +242,18 @@ def parseCppHeader( cppHeader, outputDir ):
 
             # method parameters in call ...
             for iParam in range(0, len(parameters)):
+
+                if parametersCast[ iParam ] != None:
+                    f.write(parametersCast[ iParam ] + "(");
                 
                 f.write(parameters[iParam]['name'])
+                if parametersCast[ iParam ] != None:
+                    f.write(")");
+
                 if ( iParam < len(parameters)-1 ):
                     f.write(",")
 
+                
             f.write( ");\n" );
         
             f.write("}\n")
@@ -223,8 +303,12 @@ try:
 #"qtbase/src/widgets/widgets/qcombobox.h",
 #"qtbase/src/widgets/widgets/qscrollbar.h",
 #"qtbase/src/widgets/widgets/qframe.h",
-#"qtbase/src/widgets/widgets/qframe.h"
-"qtbase/src/widgets/kernel/qaction.h"      ]
+#"qtbase/src/widgets/widgets/qframe.h",
+#"qtbase/src/widgets/kernel/qaction.h", 
+"qtbase/src/corelib/io/qiodevice.h",
+"qtbase/src/corelib/io/qfiledevice.h",
+"qtbase/src/corelib/io/qfile.h"
+    ]
 
     for qtFile in qtFiles:
 

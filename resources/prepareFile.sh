@@ -23,4 +23,4 @@
 ############################################################################
 
 grep -v ^#include $1 > /tmp/withoutIncludesFile.h
-g++ -E /tmp/withoutIncludesFile.h "-DQT_DEPRECATED_SINCE(x,y)=0" "-DQ_DECLARE_OPERATORS_FOR_FLAGS(x)=" "-DQT_BEGIN_NAMESPACE=" > /tmp/tmpPreprocessorFile.h
+g++ -E /tmp/withoutIncludesFile.h "-DQT_DEPRECATED_SINCE(x,y)=0" "-DQ_DECLARE_OPERATORS_FOR_FLAGS(x)=" "-DQT_BEGIN_NAMESPACE=" "-DQ_DECLARE_FLAGS( Flags, Enum)=enum Flags{toto,tata};" > /tmp/tmpPreprocessorFile.h
