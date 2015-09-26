@@ -52,7 +52,7 @@ var myTest = {
 		index = Qats.getIndexFromPath( treeWidget, [ "foo", "bar", "to.*" ] );
 		qVerify( index && index.isValid() );
 
-		QatsItemView.executeAction( treeWidget, index, [ "testAction" ] );
+		QatsItemView.executeAction( treeWidget, index, "testAction" );
 
 		dialogLabel = mainWindow.findChild( "_testLabel" );
 		qVerify( dialogLabel );
@@ -88,7 +88,7 @@ var myTest = {
 		index = Qats.getIndexFromPath( treeWidget, [ "foo", "bar", "to.*" ] );
 		qVerify( index && index.isValid() );
 
-		QatsItemView.executeAction( treeWidget, index, [ "testAction" ], false );
+		QatsItemView.executeAction( treeWidget, index, "testAction", false );
 
 		dialogLabel = mainWindow.findChild( "_testLabel" );
 		qVerify( dialogLabel );

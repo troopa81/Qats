@@ -80,11 +80,13 @@
 *** DONE Warnings
 	CLOSED: [2015-09-23 mer. 11:05]
 	add gcc option to display warnings
-*** TODO Output text
+*** DONE Output text
+	 CLOSED: [2015-09-26 sam. 10:35]
 	- Better display
 	- display backtrace
 	- test compare and verfiy output (keeps \n?)
-*** TODO array as arguments
+*** DONE array as arguments
+	CLOSED: [2015-09-26 sam. 10:35]
 	All functions that take an array as arguments can take only an item as argument
 	QatsItemView.executeAction for example.
 ** Bugs
