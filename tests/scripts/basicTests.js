@@ -100,6 +100,11 @@ var myTest = {
 		failImportedFunction();
 	},
 
+	diffTest: function()
+	{
+		qCompareFile( "/tmp/toto", "/tmp/tutu" );
+	},
+
 	cleanupTestCase: function() {}
 };
 

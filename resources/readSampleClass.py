@@ -32,242 +32,301 @@ import pprint
 sys.path = ["../"] + sys.path
 import CppHeaderParser
 
-globalEnums = {}
-
-def findEnumFromValue( enumValueName ):
-    for (className, enums) in globalEnums.iteritems():
-        for enum in enums:
-            for enumValue in enum['values']:
-                if enumValue['name'] == enumValueName:
-                    return ( className, enum )
-
-    return (None,None)
-
-def findEnum( enumName ):
-    for (className, enums) in globalEnums.iteritems():
-        for enum in enums:
-            if enum['name'] == enumName:
-                return ( className, enum )
-
-    return (None,None)
-
-def treatType( typeName, cppClass, keepEnum ):
-
-    # BUG
-    typeName = re.sub( r"__", r"::", typeName) 
-
-    enumClassName, enum = findEnum( typeName );
-
-#    print("enumClassName="+ str(enumClassName) + " enum=" + str(enum) );
-
-    if enumClassName != None and enum != None:
-        return (enumClassName + "::" + typeName) if keepEnum else "int" ;
-    elif typeName in cppClass[ 'typedefs' ][ 'public' ]:
-        return cppClass['name'] + "::" + typeName
-    else:
-        return typeName
-
 def remove( content, startRe, endRe ):
     # BUG PARSER
     
     while(True):
-
+        
         index = content.find( startRe )
         if ( index == -1 ):
-              return content
+            return content
 
         end = re.search(endRe, content[index:]).end()
         content = content[:index] + content[index+end+1:]
 
-def parseCppHeader( cppHeader, outputDir ):
+class BindingGenerator:
 
-    for className in cppHeader.classes.keys():
+    def __init__(self):
+        self.globalEnums = {}
+        self.f = None
+        self.cppClass = None
+        self.hasPublicConstructor = False
+        self.isAbstract = False
+    def findEnumFromValue( self, enumValueName ):
+        for (className, enums) in self.globalEnums.iteritems():
+            for enum in enums:
+                for enumValue in enum['values']:
+                    if enumValue['name'] == enumValueName:
+                        return ( className, enum )
 
-        # TODO do this more cleanly...
-        if className in [ "QWidgetData" ]:
-            continue;
+        return (None,None)
 
-        protoClassName = className + "Prototype"
+    def findEnum( self, enumName ):
+        for (className, enums) in self.globalEnums.iteritems():
+            for enum in enums:
+                if enum['name'] == enumName:
+                    return ( className, enum )
+
+        return (None,None)
+
+    def treatType( self, typeName, keepEnum ):
+
+        # BUG
+        typeName = re.sub( r"__", r"::", typeName) 
+
+        enumClassName, enum = self.findEnum( typeName );
+
+    #    print("enumClassName="+ str(enumClassName) + " enum=" + str(enum) );
+
+        if enumClassName != None and enum != None:
+            return (enumClassName + "::" + typeName) if keepEnum else "int" ;
+        elif typeName in self.cppClass[ 'typedefs' ][ 'public' ]:
+            return self.cppClass['name'] + "::" + typeName
+        else:
+            return typeName
+
+    def generateScriptConstructor(self):
+
+        # script constructor only if class is not abstract and have a public constructor
+        if not self.isAbstract and self.hasPublicConstructor:
+            constructorName = "script" + self.cppClass[ 'name' ] + "Constructor";
+            self.f.write("inline QScriptValue " + constructorName + "(QScriptContext *context, QScriptEngine *engine)\n");
+            self.f.write("{\n");
+            self.f.write("QObject *parent = context->argument(0).toQObject();\n");
+            self.f.write( self.cppClass['name'] + " *object = new " + self.cppClass['name'] + "(parent);\n");
+            self.f.write("return engine->newQObject(object, QScriptEngine::ScriptOwnership);\n");
+            self.f.write("}\n\n");
+            return constructorName
+        else:
+            return None
+
+    def generateEngineRegistration( self, scriptConstructorName ):
         
-        print( "Generate " + protoClassName + "..." );
-
-        cppClass = cppHeader.classes[ className ];
-        globalEnums[ className ] = cppClass[ 'enums' ][ 'public' ];
-#        pprint.PrettyPrinter().pprint(globalEnums)
-        f = open( os.path.join( outputDir, protoClassName + ".h" ),'w')
-
-        ## write licence
-        f.write("/****************************************************************************\n");
-        f.write("**\n");
-        f.write("** Copyright (C) 2015 Cabieces Julien\n");
-        f.write("** Contact: https://github.com/troopa81/Qats\n");
-        f.write("**\n");
-        f.write("** This file is part of Qats.\n");
-        f.write("**\n");
-        f.write("** Qats is free software: you can redistribute it and/or modify\n");
-        f.write("** it under the terms of the GNU Lesser General Public License as published by\n");
-        f.write("** the Free Software Foundation, either version 3 of the License, or\n");
-        f.write("** (at your option) any later version.\n");
-        f.write("**\n");
-        f.write("** Qats is distributed in the hope that it will be useful,\n");
-        f.write("** but WITHOUT ANY WARRANTY; without even the implied warranty of\n");
-        f.write("** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n");
-        f.write("** GNU Lesser General Public License for more details.\n");
-        f.write("**\n");
-        f.write("** You should have received a copy of the GNU Lesser General Public License\n");
-        f.write("** along with Qats. If not, see <http://www.gnu.org/licenses/>.\n");
-        f.write("**\n");
-        f.write("****************************************************************************/\n");
-        f.write("\n");
-    
-        f.write("#ifndef _" + protoClassName.upper() + "_\n");
-        f.write("#define _" + protoClassName.upper() + "_\n");
-    
-        f.write("\n")
-        f.write("#include <QObject>\n")
-        f.write("#include <QScriptable>\n")
-        f.write("#include <QScriptValue>\n")
-        f.write("#include <QScriptEngine>\n")
-        f.write("#include <" + className + ">\n")
-        f.write("\n")
-
-        f.write("namespace qats\n")
-        f.write("{\n")
-        f.write("\n")
+        self.f.write("static void registerToScriptEngine(QScriptEngine* engine)\n")
+        self.f.write("{\n")
+        self.f.write("engine->setDefaultPrototype(qMetaTypeId<"); 
+        self.f.write( self.cppClass[ 'name' ] ); 
+        self.f.write( "*>(), engine->newQObject(new " + self.cppClass['name'] + "Prototype(engine)));\n\n" )
         
-        f.write("class " + protoClassName ); 
+        # script constructor only if class is not abstract 
+        if scriptConstructorName :
+            self.f.write("QScriptValue ctor = engine->newFunction(" + scriptConstructorName + ");\n");
+            self.f.write("QScriptValue metaObject = engine->newQMetaObject(&" + self.cppClass[ 'name' ] + "::staticMetaObject, ctor);\n");
+            self.f.write("engine->globalObject().setProperty(\"" + self.cppClass['name'] + "\", metaObject);\n");
 
-        # get possible inheritance
-        inherited = "";
-        for inheritedClass in cppHeader.classes[ className ]['inherits']:
-            if inheritedClass['access'] == "public":
+        self.f.write("}\n")
+        self.f.write("\n")
 
-                # not suppose to happen with Qt
-                if inherited != "":
-                    print( "Error : multiple inheritance" );
+    def parseCppHeader( self, cppHeader, outputDir ):
 
-                inherited = inheritedClass['class'] + "Prototype";
-                
-        f.write( " : public " + inherited if inherited != "" else "QObject, public QScriptable")
+        for className in cppHeader.classes.keys():
 
-        f.write( "\n" );
-        f.write("{\n")
-        f.write("Q_OBJECT\n")
-        f.write("\n")
-        
-        f.write("public:\n")
-        f.write("\n")
-        
-        f.write(protoClassName + "(QObject* parent = 0):"+ (inherited if inherited != "" else "QObject") + "(parent){}\n")
-        
-        f.write("public slots:\n")
-        f.write("\n")
-        
-        # public methods ...
-        for method in cppHeader.classes[ className ][ 'methods' ][ 'public' ]:
+            self.cppClass = cppHeader.classes[ className ];
 
-            isStatic = method['static']
-            
-            # do not treat constructor and destructor
-            if  method['constructor'] or method['destructor'] or method['name'] in [ "operator=", "operator==", "operator!=", "operator<" ]:
-                continue
+            # TODO do this more cleanly...
+            if className in [ "QWidgetData" ]:
+                continue;
 
-            returnType = method['rtnType']
+            protoClassName = className + "Prototype"
 
-            # BUG : remove static from type
-            if isStatic:
-                returnType = returnType[7:]
-                
-            # compute return type
-            returnType = treatType( returnType, cppHeader.classes[ className ], False )
-        
+            # compute if class is abstract or not
+            self.isAbstract = False
+            for methods in self.cppClass[ 'methods' ].values():
+                for method in methods:
+                    if method[ 'pure_virtual' ] :
+                        self.isAbstract = True
+                        break
 
-            f.write(returnType + " " + method['name'] + "(" )
+            self.hasPublicConstructor = False
+            for method in self.cppClass[ 'methods' ]['public']:
+                if method['constructor']:
+                    self.hasPublicConstructor = True
+                    break
 
-            # remove weird case of default value as a type (see QWidget::grab)
-            parameters = []
-            for iParameter in range( 0, len(method['parameters'])) :
-                if "(" not in method['parameters'][ iParameter ]['type']:
-                    parameters.append( method['parameters'][ iParameter ] )
-                elif iParameter > 0 :
-                    del parameters[ iParameter-1 ][ 'defaultValue' ]
+            print( "Generate " + protoClassName + "..." );
 
-            parametersCast = []
-            for iParam in range(0, len(parameters)):
-                parameter = parameters[iParam]
+            self.globalEnums[ className ] = self.cppClass[ 'enums' ][ 'public' ];
+            self.f = open( os.path.join( outputDir, protoClassName + ".h" ),'w')
 
-                # compute parameter cast if needed
-                enumClassName, enum = findEnum( parameter['type'] );
-                parametersCast.append( enumClassName + "::" + enum['name'] if enumClassName != None and enum != None else None );
+            ## write licence
+            self.f.write("/****************************************************************************\n");
+            self.f.write("**\n");
+            self.f.write("** Copyright (C) 2015 Cabieces Julien\n");
+            self.f.write("** Contact: https://github.com/troopa81/Qats\n");
+            self.f.write("**\n");
+            self.f.write("** This file is part of Qats.\n");
+            self.f.write("**\n");
+            self.f.write("** Qats is free software: you can redistribute it and/or modify\n");
+            self.f.write("** it under the terms of the GNU Lesser General Public License as published by\n");
+            self.f.write("** the Free Software Foundation, either version 3 of the License, or\n");
+            self.f.write("** (at your option) any later version.\n");
+            self.f.write("**\n");
+            self.f.write("** Qats is distributed in the hope that it will be useful,\n");
+            self.f.write("** but WITHOUT ANY WARRANTY; without even the implied warranty of\n");
+            self.f.write("** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n");
+            self.f.write("** GNU Lesser General Public License for more details.\n");
+            self.f.write("**\n");
+            self.f.write("** You should have received a copy of the GNU Lesser General Public License\n");
+            self.f.write("** along with Qats. If not, see <http://www.gnu.org/licenses/>.\n");
+            self.f.write("**\n");
+            self.f.write("****************************************************************************/\n");
+            self.f.write("\n");
 
-                paramType = treatType( parameter['type'], cppHeader.classes[ className ], False )                
+            self.f.write("#ifndef _" + protoClassName.upper() + "_\n");
+            self.f.write("#define _" + protoClassName.upper() + "_\n");
 
-                # bug in parser
-                if ( parameter['name'] == "&" ):
-                    paramType += "&"
-                    parameter['name'] = ""
+            # get possible inheritance
+            inherited = "";
+            for inheritedClass in self.cppClass['inherits']:
+                if inheritedClass['access'] == "public":
 
-                if ( parameter['name'] == "" ):
-                    parameter['name'] = "param" + str(iParam)
+                    # not suppose to happen with Qt
+                    if inherited != "":
+                        print( "Error : multiple inheritance" );
 
-                f.write(paramType + " " + parameter['name'])
+                    inherited = inheritedClass['class'] + "Prototype";
 
-                # default value if any
-                if "defaultValue" in parameter :
-                    enumClassName, enum = findEnumFromValue( parameter['defaultValue'] )
-                    f.write(" = "); 
-                    if enumClassName != None and enum != None:
-                        f.write( enumClassName + "::" + parameter['defaultValue'] );
-                    else:
-                        f.write(treatType( parameter['defaultValue'], cppHeader.classes[ className ], True ) )
+            self.f.write("\n")
+            self.f.write("#include <QObject>\n")
+            self.f.write("#include <QScriptable>\n")
+            self.f.write("#include <QScriptValue>\n")
+            self.f.write("#include <QScriptEngine>\n")
+            self.f.write("#include <" + className + ">\n")
+            self.f.write("\n")
 
-                if ( iParam < len(parameters)-1 ):
-                    f.write(",")
+            self.f.write("#include \"" + inherited + ".h\"\n");
+            self.f.write("\n")
 
-            f.write(")\n")
-            f.write("{\n")
+            scriptConstructorName = self.generateScriptConstructor();
 
-            if not isStatic:
-                f.write(className + " *object = qscriptvalue_cast<" + className + "*>(thisObject());\n")
+            self.f.write("namespace qats\n")
+            self.f.write("{\n")
+            self.f.write("\n")
 
-            if ( returnType != "void" ):
-                f.write("return ")
+            self.f.write("class " + protoClassName ); 
 
-            if isStatic:
-                f.write( className + "::" )
-            else:
-                f.write( "object->" )
+            self.f.write( " : public " + inherited if inherited != "" else "QObject, public QScriptable")
 
-            f.write( method['name'] + "(" );
+            self.f.write( "\n" );
+            self.f.write("{\n")
+            self.f.write("Q_OBJECT\n")
+            self.f.write("\n")
 
-            # method parameters in call ...
-            for iParam in range(0, len(parameters)):
+            self.f.write("public:\n")
+            self.f.write("\n")
 
-                if parametersCast[ iParam ] != None:
-                    f.write(parametersCast[ iParam ] + "(");
-                
-                f.write(parameters[iParam]['name'])
-                if parametersCast[ iParam ] != None:
-                    f.write(")");
+            self.generateEngineRegistration( scriptConstructorName );
 
-                if ( iParam < len(parameters)-1 ):
-                    f.write(",")
+            self.f.write(protoClassName + "(QObject* parent = 0):"+ (inherited if inherited != "" else "QObject") + "(parent){}\n")
 
-                
-            f.write( ");\n" );
-        
-            f.write("}\n")
+            self.f.write("public slots:\n")
+            self.f.write("\n")
 
-        f.write("};\n")
-        f.write("}\n")
-        f.write("\n")
+            # public methods ...
+            for method in self.cppClass[ 'methods' ][ 'public' ]:
 
-        if className not in [ "QWidget" ]:
-            f.write("Q_DECLARE_METATYPE(" + className + "*)\n")
-            f.write("\n")
+                isStatic = method['static']
 
-        f.write("#endif\n");
-        f.close()
+                # do not treat constructor and destructor
+                if  method['constructor'] or method['destructor'] or method['name'] in [ "operator=", "operator==", "operator!=", "operator<" ]:
+                    continue
+
+                returnType = method['rtnType']
+
+                # BUG : remove static from type
+                if isStatic:
+                    returnType = returnType[7:]
+
+                # compute return type
+                returnType = self.treatType( returnType, False )
+
+
+                self.f.write(returnType + " " + method['name'] + "(" )
+
+                # remove weird case of default value as a type (see QWidget::grab)
+                parameters = []
+                for iParameter in range( 0, len(method['parameters'])) :
+                    if "(" not in method['parameters'][ iParameter ]['type']:
+                        parameters.append( method['parameters'][ iParameter ] )
+                    elif iParameter > 0 :
+                        del parameters[ iParameter-1 ][ 'defaultValue' ]
+
+                parametersCast = []
+                for iParam in range(0, len(parameters)):
+                    parameter = parameters[iParam]
+
+                    # compute parameter cast if needed
+                    enumClassName, enum = self.findEnum( parameter['type'] );
+                    parametersCast.append( enumClassName + "::" + enum['name'] if enumClassName != None and enum != None else None );
+
+                    paramType = self.treatType( parameter['type'], False )                
+
+                    # bug in parser
+                    if ( parameter['name'] == "&" ):
+                        paramType += "&"
+                        parameter['name'] = ""
+
+                    if ( parameter['name'] == "" ):
+                        parameter['name'] = "param" + str(iParam)
+
+                    self.f.write(paramType + " " + parameter['name'])
+
+                    # default value if any
+                    if "defaultValue" in parameter :
+                        enumClassName, enum = self.findEnumFromValue( parameter['defaultValue'] )
+                        self.f.write(" = "); 
+                        if enumClassName != None and enum != None:
+                            self.f.write( enumClassName + "::" + parameter['defaultValue'] );
+                        else:
+                            self.f.write(self.treatType( parameter['defaultValue'], True ) )
+
+                    if ( iParam < len(parameters)-1 ):
+                        self.f.write(",")
+
+                self.f.write(")\n")
+                self.f.write("{\n")
+
+                if not isStatic:
+                    self.f.write(className + " *object = qscriptvalue_cast<" + className + "*>(thisObject());\n")
+
+                if ( returnType != "void" ):
+                    self.f.write("return ")
+
+                if isStatic:
+                    self.f.write( className + "::" )
+                else:
+                    self.f.write( "object->" )
+
+                self.f.write( method['name'] + "(" );
+
+                # method parameters in call ...
+                for iParam in range(0, len(parameters)):
+
+                    if parametersCast[ iParam ] != None:
+                        self.f.write(parametersCast[ iParam ] + "(");
+
+                    self.f.write(parameters[iParam]['name'])
+                    if parametersCast[ iParam ] != None:
+                        self.f.write(")");
+
+                    if ( iParam < len(parameters)-1 ):
+                        self.f.write(",")
+
+
+                self.f.write( ");\n" );
+
+                self.f.write("}\n")
+
+            self.f.write("};\n")
+            self.f.write("}\n")
+            self.f.write("\n")
+
+            if className not in [ "QWidget" ]:
+                self.f.write("Q_DECLARE_METATYPE(" + className + "*)\n")
+                self.f.write("\n")
+
+            self.f.write("#endif\n");
+            f.close()
 
 ########################### main
 
@@ -309,6 +368,8 @@ try:
 "qtbase/src/corelib/io/qfiledevice.h",
 "qtbase/src/corelib/io/qfile.h"
     ]
+
+    generator = BindingGenerator() 
 
     for qtFile in qtFiles:
 
@@ -355,7 +416,7 @@ try:
 
         cppHeader = CppHeaderParser.CppHeader( tmpFileName )
         
-        parseCppHeader( cppHeader, outputDir )
+        generator.parseCppHeader( cppHeader, outputDir )
 
 except CppHeaderParser.CppParseError as e:
     print(e)

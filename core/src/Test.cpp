@@ -70,6 +70,7 @@
 #include "QScrollBarPrototype.h"
 #include "QFramePrototype.h"
 #include "QActionPrototype.h"
+#include "QFilePrototype.h"
 // #include "QElapsedTimerPrototype.h"
 //#include "QContextMenuEventPrototype.h"
 
@@ -80,33 +81,6 @@ QScriptValue qTimerConstructor(QScriptContext *context,
     QTimer *timer = new QTimer(parent);
     return engine->newQObject(timer, QScriptEngine::ScriptOwnership);
 }
-
-
-// QScriptValue qElapsedTimerConstructor(QScriptContext *context,
-// 									  QScriptEngine *engine)
-// {
-//     QElapsedTimer *timer = new QElapsedTimer;
-//     return engine->newQObject(timer, QScriptEngine::ScriptOwnership);
-// }
-
-// QScriptValue qContextMenuEventConstructor(QScriptContext *context, QScriptEngine *engine)
-// {
-// 	if (context->isCalledAsConstructor()) {
-//         // initialize the new object
-
-
-// 		QContextMenuEvent *object = qscriptvalue_cast<QContextMenuEvent*>(context->thisObject());
-
-// 		qDebug() << "object=" << object << ",";
-
-//         // ...
-//         // return a non-object value to indicate that the
-//         // thisObject() should be the result of the "new Foo()" expression
-//         return engine->undefinedValue();
-//     } 
-
-// 	return QScriptValue(); 
-// }
 
 namespace qats
 {
@@ -166,68 +140,72 @@ int Test::executeTest(const QString& scriptFilePath, int delay )
 	qRegisterMetaType< QModelIndex >("QModelIndex");
 	qRegisterMetaType< QModelIndexList >("QModelIndexList");
 
-	Test::get()->_scriptEngine = new QScriptEngine();
+	_scriptEngine = new QScriptEngine();
 
-	qScriptRegisterSequenceMetaType< QWidgetList >(Test::get()->_scriptEngine);
-	qScriptRegisterSequenceMetaType< QObjectList >(Test::get()->_scriptEngine);
-	qScriptRegisterSequenceMetaType< QModelIndexList >(Test::get()->_scriptEngine);
-	qScriptRegisterSequenceMetaType< QList<QAction*> >(Test::get()->_scriptEngine);
+	QIODevicePrototype::registerToScriptEngine( _scriptEngine );
+	QFileDevicePrototype::registerToScriptEngine( _scriptEngine );
+	QFilePrototype::registerToScriptEngine( _scriptEngine );
+
+	qScriptRegisterSequenceMetaType< QWidgetList >(_scriptEngine);
+	qScriptRegisterSequenceMetaType< QObjectList >(_scriptEngine);
+	qScriptRegisterSequenceMetaType< QModelIndexList >(_scriptEngine);
+	qScriptRegisterSequenceMetaType< QList<QAction*> >(_scriptEngine);
 
 
-	QScriptValue scriptTestObject = Test::get()->_scriptEngine->newQObject(Test::get());
-	Test::get()->_scriptEngine->globalObject().setProperty("Qats", scriptTestObject);
+	QScriptValue scriptTestObject = _scriptEngine->newQObject(Test::get());
+	_scriptEngine->globalObject().setProperty("Qats", scriptTestObject);
 
 	// TODO : no idea why we need this line => for enums ?
-	Test::get()->_scriptEngine->globalObject().setProperty("Qt", Test::get()->_scriptEngine->newQMetaObject(&QObject::staticMetaObject));
-	Test::get()->_scriptEngine->globalObject().setProperty("QMessageBox", Test::get()->_scriptEngine->newQMetaObject(&QMessageBox::staticMetaObject));
-	Test::get()->_scriptEngine->globalObject().setProperty("QEventLoop", Test::get()->_scriptEngine->newQMetaObject(&QEventLoop::staticMetaObject));
-	Test::get()->_scriptEngine->globalObject().setProperty("TestEnums", Test::get()->_scriptEngine->newQMetaObject(&Test::staticMetaObject));
+	_scriptEngine->globalObject().setProperty("Qt", _scriptEngine->newQMetaObject(&QObject::staticMetaObject));
+	_scriptEngine->globalObject().setProperty("QMessageBox", _scriptEngine->newQMetaObject(&QMessageBox::staticMetaObject));
+	_scriptEngine->globalObject().setProperty("QEventLoop", _scriptEngine->newQMetaObject(&QEventLoop::staticMetaObject));
+	_scriptEngine->globalObject().setProperty("TestEnums", _scriptEngine->newQMetaObject(&Test::staticMetaObject));
 
-//	Test::get()->_scriptEngine->globalObject().setProperty("QApplication", Test::get()->_scriptEngine->newQObject(QApplication::instance()));
+//	_scriptEngine->globalObject().setProperty("QApplication", _scriptEngine->newQObject(QApplication::instance()));
 
 
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QLineEdit*>(), Test::get()->_scriptEngine->newQObject(new QLineEditPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QTreeView*>(), Test::get()->_scriptEngine->newQObject(new QTreeViewPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QAbstractItemView*>(), Test::get()->_scriptEngine->newQObject(new QAbstractItemViewPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QAbstractItemModel*>(), Test::get()->_scriptEngine->newQObject(new QAbstractItemModelPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QModelIndex*>(), Test::get()->_scriptEngine->newQObject(new QModelIndexPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QModelIndex>(), Test::get()->_scriptEngine->newQObject(new QModelIndexPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QWidget*>(), Test::get()->_scriptEngine->newQObject(new QWidgetPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QMetaObject*>(), Test::get()->_scriptEngine->newQObject(new MetaObjectPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QMetaProperty*>(), Test::get()->_scriptEngine->newQObject(new QMetaPropertyPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QMetaProperty>(), Test::get()->_scriptEngine->newQObject(new QMetaPropertyPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QObject*>(), Test::get()->_scriptEngine->newQObject(new QObjectPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QTimer*>(), Test::get()->_scriptEngine->newQObject(new QTimerPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QToolBar*>(), Test::get()->_scriptEngine->newQObject(new QToolBarPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QRect*>(), Test::get()->_scriptEngine->newQObject(new QRectPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QRect>(), Test::get()->_scriptEngine->newQObject(new QRectPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QPoint*>(), Test::get()->_scriptEngine->newQObject(new QPointPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QPoint>(), Test::get()->_scriptEngine->newQObject(new QPointPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QItemSelectionModel*>(), Test::get()->_scriptEngine->newQObject(new QItemSelectionModelPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QAbstractScrollArea*>(), Test::get()->_scriptEngine->newQObject(new QAbstractScrollAreaPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QCoreApplication*>(), Test::get()->_scriptEngine->newQObject(new QCoreApplicationPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QMenu*>(), Test::get()->_scriptEngine->newQObject(new QMenuPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QComboBox*>(), Test::get()->_scriptEngine->newQObject(new QComboBoxPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QScrollBar*>(), Test::get()->_scriptEngine->newQObject(new QScrollBarPrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QFrame*>(), Test::get()->_scriptEngine->newQObject(new QFramePrototype) );
-	Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QAction*>(), Test::get()->_scriptEngine->newQObject(new QActionPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QLineEdit*>(), _scriptEngine->newQObject(new QLineEditPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QTreeView*>(), _scriptEngine->newQObject(new QTreeViewPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QAbstractItemView*>(), _scriptEngine->newQObject(new QAbstractItemViewPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QAbstractItemModel*>(), _scriptEngine->newQObject(new QAbstractItemModelPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QModelIndex*>(), _scriptEngine->newQObject(new QModelIndexPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QModelIndex>(), _scriptEngine->newQObject(new QModelIndexPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QWidget*>(), _scriptEngine->newQObject(new QWidgetPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QMetaObject*>(), _scriptEngine->newQObject(new MetaObjectPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QMetaProperty*>(), _scriptEngine->newQObject(new QMetaPropertyPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QMetaProperty>(), _scriptEngine->newQObject(new QMetaPropertyPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QObject*>(), _scriptEngine->newQObject(new QObjectPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QTimer*>(), _scriptEngine->newQObject(new QTimerPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QToolBar*>(), _scriptEngine->newQObject(new QToolBarPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QRect*>(), _scriptEngine->newQObject(new QRectPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QRect>(), _scriptEngine->newQObject(new QRectPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QPoint*>(), _scriptEngine->newQObject(new QPointPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QPoint>(), _scriptEngine->newQObject(new QPointPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QItemSelectionModel*>(), _scriptEngine->newQObject(new QItemSelectionModelPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QAbstractScrollArea*>(), _scriptEngine->newQObject(new QAbstractScrollAreaPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QCoreApplication*>(), _scriptEngine->newQObject(new QCoreApplicationPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QMenu*>(), _scriptEngine->newQObject(new QMenuPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QComboBox*>(), _scriptEngine->newQObject(new QComboBoxPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QScrollBar*>(), _scriptEngine->newQObject(new QScrollBarPrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QFrame*>(), _scriptEngine->newQObject(new QFramePrototype) );
+	_scriptEngine->setDefaultPrototype(qMetaTypeId<QAction*>(), _scriptEngine->newQObject(new QActionPrototype) );
 
-	// Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QElaspedTimer*>(), Test::get()->_scriptEngine->newQObject(new QElapsedTimerPrototype) );
-	//Test::get()->_scriptEngine->setDefaultPrototype(qMetaTypeId<QContextMenuEvent*>(), Test::get()->_scriptEngine->newQObject(new QContextMenuEventPrototype) );
+	// _scriptEngine->setDefaultPrototype(qMetaTypeId<QElaspedTimer*>(), _scriptEngine->newQObject(new QElapsedTimerPrototype) );
+	//_scriptEngine->setDefaultPrototype(qMetaTypeId<QContextMenuEvent*>(), _scriptEngine->newQObject(new QContextMenuEventPrototype) );
 
-	// Test::get()->_scriptEngine->globalObject().setProperty("QContextMenuEvent", Test::get()->_scriptEngine->newFunction(qContextMenuEventConstructor, Test::get()->_scriptEngine->newQObject(new QContextMenuEventPrototype)));
+	// _scriptEngine->globalObject().setProperty("QContextMenuEvent", _scriptEngine->newFunction(qContextMenuEventConstructor, _scriptEngine->newQObject(new QContextMenuEventPrototype)));
 
-    QScriptValue ctor = Test::get()->_scriptEngine->newFunction(qTimerConstructor);
-    QScriptValue metaObject = Test::get()->_scriptEngine->newQMetaObject(&QTimer::staticMetaObject, ctor);
-    Test::get()->_scriptEngine->globalObject().setProperty("QTimer", metaObject);
+    QScriptValue ctor = _scriptEngine->newFunction(qTimerConstructor);
+    QScriptValue metaObject = _scriptEngine->newQMetaObject(&QTimer::staticMetaObject, ctor);
+    _scriptEngine->globalObject().setProperty("QTimer", metaObject);
 
-	// ctor = Test::get()->_scriptEngine->newFunction(qElapsedTimerConstructor);
-    // metaObject = Test::get()->_scriptEngine->newQMetaObject(&QElapsedTimer::staticMetaObject, ctor);
-    // Test::get()->_scriptEngine->globalObject().setProperty("QElapsedTimer", metaObject);
+	// ctor = _scriptEngine->newFunction(qElapsedTimerConstructor);
+    // metaObject = _scriptEngine->newQMetaObject(&QElapsedTimer::staticMetaObject, ctor);
+    // _scriptEngine->globalObject().setProperty("QElapsedTimer", metaObject);
 
-	Test::get()->_scriptEngine->globalObject().setProperty("QTest", Test::get()->_scriptEngine->newQObject(new QTestPrototype));
+	_scriptEngine->globalObject().setProperty("QTest", _scriptEngine->newQObject(new QTestPrototype));
 
-	Test::get()->_scriptEngine->globalObject().setProperty("QApplication", Test::get()->_scriptEngine->newQObject(new QApplicationPrototype));
+	_scriptEngine->globalObject().setProperty("QApplication", _scriptEngine->newQObject(new QApplicationPrototype));
 
 	if ( !evaluateScript( _qatsFilePath ) )
 	{

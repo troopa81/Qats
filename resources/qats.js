@@ -45,6 +45,16 @@ function qWarn(message) {
 	Qats.sendMessage( TestEnums.WARN, [ message, Qats.getBacktrace() ] );
 }
 
+function qCompareFile(file1, file2)
+{
+	f1 = new QFile( file1 );
+	// TODO correct : add enums
+	qVerify( f1.open( QIODevice.ReadOnly ) ); 
+
+	f2 = new QFile( file2 );
+	qVerify( f2.open( QIODevice.ReadOnly ) ); 
+}
+
 Qats.executeTestCase = function(testcase) {
 
 	Qats.sendMessage( TestEnums.TESTCASE_START, [ testcase['name'] ] );

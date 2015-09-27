@@ -35,15 +35,15 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 file(GLOB CPP_LIST "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 file(GLOB INC_LIST "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")
 
-# app
-add_executable(qats ${CPP_LIST} ${INC_LIST})
-target_include_directories(qats PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
-qt5_use_modules(qats Widgets Test Script Network Xml)
-
 # lib
 add_library(qatsClient SHARED ${CPP_LIST} ${INC_LIST})
 target_include_directories(qatsClient PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 qt5_use_modules(qatsClient Widgets Test Script Network Xml)
+
+# app
+add_executable(qats ${CPP_LIST} ${INC_LIST})
+target_include_directories(qats PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+qt5_use_modules(qats Widgets Test Script Network Xml)
 
 install(TARGETS qats qatsClient
   RUNTIME DESTINATION bin 
