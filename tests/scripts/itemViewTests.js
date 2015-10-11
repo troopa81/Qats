@@ -150,7 +150,7 @@ var myTest = {
 
 		qCompare( dialogLabel.text, "dialogActionTriggered" );
 	},
-		
+
 	cleanupTestCase: function() {}
 };
 

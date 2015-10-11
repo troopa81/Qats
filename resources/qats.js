@@ -260,6 +260,7 @@ Qats.getMainWindow = function()
 
 Qats.activeDialogVisible = function()
 {
+	qWarn( "visible?" + Qats.activeDialog() ? Qats.activeDialog().visible : "null" );
 	return Qats.activeDialog() && Qats.activeDialog().visible;
 }
 
@@ -272,28 +273,58 @@ Qats.acceptDialog = function()
 	qVerify( !dialog.visible );
 }
 
+Qats._removeCurrentDelayedAction = function()
+{
+	Qats._delayedActions.splice( 0, 1); 
+	if ( !Qats._delayedActions.length )
+	{
+		Qats._timer.stop();
+	}
+}
+
+Qats._timer = new QTimer
+Qats._timer.interval = 1000; // set the time in milliseconds
+Qats._timer.singleShot = false; 
+Qats._delayedActions = []; 
+Qats._timer.timeout.connect(this, function(){
+
+	qVerify( Qats._delayedActions.length );
+	
+	Qats._timer.stop(); 
+	Qats._timer.start(); 
+	
+	var currentDelayedAction = Qats._delayedActions[ 0 ]; 
+	if ( currentDelayedAction.triggerCondition() )
+	{
+		Qats._removeCurrentDelayedAction();
+		currentDelayedAction.action();
+	}
+	else
+	{
+		currentDelayedAction.timeout -= 1000; 
+		if ( currentDelayedAction.timeout < 0 )
+		{
+			Qats._removeCurrentDelayedAction();
+			qFail( "Cannot execute delayed action, timeout on triggerCondition " );
+		}
+	}
+});
+
 Qats.delayedAction = function( action, triggerCondition, timeout )
 {
 	timeout = timeout ? timeout : 30000;
 
-	if ( triggerCondition() )
+	Qats._delayedActions.unshift( { action: action, triggerCondition: triggerCondition, timeout: timeout } ); 
+
+	Qats._timer.stop(); 
+	Qats._timer.start(); 
+	
+	/*
+	if ( !Qats._timer.active )
 	{
-		action();
-	}
-	else if ( timeout > 0 )
-	{
-		var timer = new QTimer;
-		timer.interval = 1000; // set the time in milliseconds
-		timer.singleShot = true; // in-case if setTimout and false in-case of setInterval 
-		timer.timeout.connect(this, function(){
-			Qats.delayedAction( action, triggerCondition, timeout-1000 );
-		});
-		timer.start();
-	}
-	else
-	{
-		qFail( "Cannot execute delayed action, timeout on triggerCondition " );
-	}
+		qWarn( "start timer!" );
+		Qats._timer.start(); 
+	}*/
 }
 
 Qats.getIndexFromPath = function( treeView, path )
