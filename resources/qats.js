@@ -260,7 +260,6 @@ Qats.getMainWindow = function()
 
 Qats.activeDialogVisible = function()
 {
-	qWarn( "visible?" + Qats.activeDialog() ? Qats.activeDialog().visible : "null" );
 	return Qats.activeDialog() && Qats.activeDialog().visible;
 }
 
@@ -327,17 +326,36 @@ Qats.delayedAction = function( action, triggerCondition, timeout )
 	}*/
 }
 
+/*! 
+  \return an q QModelIndex of item at the given path in the \param treeView
+  \param treeView can be an object that extends QAbstractItemView or a its name
+  \param path list of nodes separated with '/'. Manage wildcard. Plan to manage XPath in the future
+*/
 Qats.getIndexFromPath = function( treeView, path )
 {
+	treeView = typeof itemView === 'string' ? Qats.findGuiObject( treeView ) : treeView;
+	qVerify( treeView );
+	qVerify( treeView.inherits( "QAbstractItemView" ) );
+
+	qVerify( typeof path === 'string' );
+
 	var model = treeView.model();
 	if ( model == null ) return null;
 
 	var index = model.index( 0, 0 );
 
-	var first = true;
-	for( var i=0; i<path.length; i++)
+	// remove first '/' if any
+	if ( path.length > 0 && path[0] == '/' )
 	{
-		pathElt = path[ i ];
+		path = path.slice(1); 
+	}
+
+	var pathArray = path.split( "/" );
+	
+	var first = true;
+	for( var i=0; i<pathArray.length; i++)
+	{
+		pathElt = pathArray[ i ];
 
 		var indexes = model.match( first ? index : index.child( 0, 0), Qt.DisplayRole, pathElt, -1, Qt.MatchRegExp );
 		if ( indexes.length != 1 ) return null;
@@ -364,8 +382,12 @@ Qats.findChildWithType = function( object, typeName )
 	return null;
 }
 
-Qats.executeActionFromQToolBar = function( action )
+QatsToolBar = {}
+QatsToolBar.executeAction = function( action )
 {
+	action = typeof action === 'string' ? Qats.findGuiObject( action ) : action;
+	qVerify( action );
+
 	mainWindow = Qats.getMainWindow();
 	qVerify( mainWindow );
 
@@ -382,31 +404,6 @@ Qats.executeActionFromQToolBar = function( action )
 	qVerify( !center.isNull() );
 
 	QTest.mouseClick( child, Qt.LeftButton, Qt.NoModifier, center );
-}
-
-
-Qats.selectInQAbstractItemView = function( itemView, index )
-{
-	qVerify( itemView );
-	qVerify( index.isValid() );
-
-	model = itemView.model(); 
-	qVerify( model );
-
-	selectionModel = itemView.selectionModel(); 
-	qVerify( selectionModel );
-
-	selectionModel.clear();
-
-	itemView.scrollTo( index );
-
-	rect = itemView.visualRect( index ); 
-	qVerify( rect.isValid() );
-
-	center = rect.center();
-	qVerify( !center.isNull() );
-
-	QTest.mouseClick( itemView.viewport(), Qt.LeftButton, Qt.NoModifier, center );
 }
 
 Qats.findDataInQTableView = function( tableView, data )
@@ -473,18 +470,6 @@ Qats.waitFor = function( conditionFunction, timeout )
 	
 	qVerify( conditionFunction() );
 }
-
-Qats.selectFromQAbsractItemView = function( itemView, index )
-{
-	var rect = itemView.visualRect( index ); 
-	qVerify( rect.isValid() );
-	
-	var center = rect.center();
-	qVerify( !center.isNull() );
-
-	QTest.mouseClick( itemView.viewport(), Qt.LeftButton, Qt.NoModifier, center );
-}
-
 
 /*! 
   debug function to list properties for an object
@@ -567,6 +552,95 @@ QatsItemView.setChecked = function( itemView, index, isChecked )
 }
 
 /*! 
+  select item(s) from ItemView
+  \param itemView could be either an objet that extend QAbstractItemView or the item view object name
+  \param indexes can be : 
+  - a QModelIndex
+  - a path to the index
+  - a list of mixed QModelIndex or path, meaning that several item has to be selected
+*/
+QatsItemView.select = function( itemView, indexes )
+{
+	itemView = typeof itemView === 'string' ? Qats.findGuiObject( itemView ) : itemView;
+	qVerify( itemView );
+	qVerify( itemView.inherits( "QAbstractItemView" ) );
+
+	// be sure we have an array
+	indexes = [].concat( indexes );
+
+	model = itemView.model(); 
+	qVerify( model );
+
+	selectionModel = itemView.selectionModel(); 
+	qVerify( selectionModel );
+
+	// clear previous selection
+	selectionModel.clear();
+
+	// select all item
+	for( var i=0; i<indexes.length; i++ )
+	{
+		index = indexes[ i ];
+		
+		index = typeof index === 'string' ? Qats.getIndexFromPath( itemView, index ) : index; 
+		qVerify( index );
+		qVerify( index.isValid() );
+
+		itemView.scrollTo( index );
+
+		rect = itemView.visualRect( index ); 
+		qVerify( rect.isValid() );
+
+		center = rect.center();
+		qVerify( !center.isNull() );
+		
+		QTest.mouseClick( itemView.viewport(), Qt.LeftButton, Qt.ControlModifier, center );
+	}
+}
+
+/*! 
+  \return true if all item(s) are selected in ItemView
+  \param itemView could be either an objet that extend QAbstractItemView or the item view object name
+  \param indexes can be : 
+  - a QModelIndex
+  - a path to the index
+  - a list of mixed QModelIndex or path, meaning that the function return true only if
+  all item are selected
+*/
+QatsItemView.isSelected = function( itemView, indexes )
+{
+	itemView = typeof itemView === 'string' ? Qats.findGuiObject( itemView ) : itemView;
+	qVerify( itemView );
+	qVerify( itemView.inherits( "QAbstractItemView" ) );
+
+	// be sure we have an array
+	indexes = [].concat( indexes );
+
+	model = itemView.model(); 
+	qVerify( model );
+
+	selectionModel = itemView.selectionModel(); 
+	qVerify( selectionModel );
+
+	// select all item
+	for( var i=0; i<indexes.length; i++ )
+	{
+		index = indexes[ i ];
+		
+		index = typeof index === 'string' ? Qats.getIndexFromPath( itemView, index ) : index; 
+		qVerify( index );
+		qVerify( index.isValid() );
+
+		if ( !selectionModel.isSelected( index ) )
+		{
+			return false; 
+		}
+	}
+
+	return true;
+}
+
+/*! 
   find and \return action according to action description given as argument and contextual menu 
   containing the action
   \param action could be : 
@@ -605,6 +679,9 @@ Qats.getAction = function( action, menu )
 /*!
   Execute en action from an item view for a given \param index
   \param itemView could be either an objet that extend QAbstractItemView or the item view object name
+  \param index item on which Qats has to trigger the action. Can be : 
+     - a QModelIndex
+	 - a path to the item (\sa getIndexFromPath)
   \param actions could be a : 
      - a QAction object 
 	 - an action object name
@@ -629,6 +706,9 @@ QatsItemView.executeAction = function( itemView, index, actions, blockingContext
 	blockingContextMenu = blockingContextMenu != null && blockingContextMenu != undefined ? 
 		blockingContextMenu : true; 
 
+	// index can be an array defining a path
+	qVerify( index );
+	index = typeof index === 'string' ? Qats.getIndexFromPath( itemView, index ) : index;
 	qVerify( index );
 	qVerify( index.isValid() );
 
@@ -706,4 +786,29 @@ QatsItemView.executeAction = function( itemView, index, actions, blockingContext
 
 	// in any case, we have to wait that no menu is no longer visible
 	Qats.waitFor( function(){ return !Qats.isMenuVisible(); } );
+}
+
+/*! 
+  \return true if \param object is an array
+*/
+Qats.isArray = function( object )
+{
+	return Object.prototype.toString.call( object ) === '[object Array]';
+}
+
+QatsMessageBox = {}
+
+/*!
+  Click on QMessageBox button
+  \param buttonId the QMessageBox::StandardButton to be clicked
+*/
+QatsMessageBox.clickButton = function( buttonId )
+{
+	dialog = Qats.activeDialog();
+	qVerify( dialog );
+
+	button = dialog.button( buttonId ); 
+	qVerify( button );
+
+	QTest.mouseClick( button, Qt.LeftButton );
 }

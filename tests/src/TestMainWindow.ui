@@ -19,6 +19,9 @@
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
        <widget class="QTreeWidget" name="_treeWidget">
+        <property name="selectionMode">
+         <enum>QAbstractItemView::ExtendedSelection</enum>
+        </property>
         <column>
          <property name="text">
           <string>1</string>
@@ -238,9 +241,7 @@
      </layout>
     </item>
    </layout>
-   <zorder>_treeWidget</zorder>
    <zorder></zorder>
-   <zorder>_treeWidgetCustomContextMenu</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

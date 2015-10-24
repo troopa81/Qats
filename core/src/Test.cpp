@@ -71,6 +71,9 @@
 #include "QFramePrototype.h"
 #include "QActionPrototype.h"
 #include "QFilePrototype.h"
+#include "QMessageBoxPrototype.h"
+#include "QDialogPrototype.h"
+#include "QAbstractButtonPrototype.h"
 // #include "QElapsedTimerPrototype.h"
 //#include "QContextMenuEventPrototype.h"
 
@@ -145,6 +148,9 @@ int Test::executeTest(const QString& scriptFilePath, int delay )
 	QIODevicePrototype::registerToScriptEngine( _scriptEngine );
 	QFileDevicePrototype::registerToScriptEngine( _scriptEngine );
 	QFilePrototype::registerToScriptEngine( _scriptEngine );
+	QMessageBoxPrototype::registerToScriptEngine( _scriptEngine );
+	QDialogPrototype::registerToScriptEngine( _scriptEngine );
+	QAbstractButtonPrototype::registerToScriptEngine( _scriptEngine );
 
 	qScriptRegisterSequenceMetaType< QWidgetList >(_scriptEngine);
 	qScriptRegisterSequenceMetaType< QObjectList >(_scriptEngine);

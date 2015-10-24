@@ -92,8 +92,9 @@ class BindingGenerator:
             constructorName = "script" + self.cppClass[ 'name' ] + "Constructor";
             self.f.write("inline QScriptValue " + constructorName + "(QScriptContext *context, QScriptEngine *engine)\n");
             self.f.write("{\n");
-            self.f.write("QObject *parent = context->argument(0).toQObject();\n");
-            self.f.write( self.cppClass['name'] + " *object = new " + self.cppClass['name'] + "(parent);\n");
+# TODO set the parent correctly. QWidget take QWidget as parent not QObject, so this need a cast
+#            self.f.write("QObject *parent = context->argument(0).toQObject();\n");
+            self.f.write( self.cppClass['name'] + " *object = new " + self.cppClass['name'] + "(0);\n");
             self.f.write("return engine->newQObject(object, QScriptEngine::ScriptOwnership);\n");
             self.f.write("}\n\n");
             return constructorName
@@ -235,7 +236,7 @@ class BindingGenerator:
 
                 # BUG : remove static from type
                 if isStatic:
-                    returnType = returnType[7:]
+                    returnType = returnType[ returnType.find( "static") + 7:]
 
                 # compute return type
                 returnType = self.treatType( returnType, False )
@@ -364,9 +365,12 @@ try:
 #"qtbase/src/widgets/widgets/qframe.h",
 #"qtbase/src/widgets/widgets/qframe.h",
 #"qtbase/src/widgets/kernel/qaction.h", 
-"qtbase/src/corelib/io/qiodevice.h",
-"qtbase/src/corelib/io/qfiledevice.h",
-"qtbase/src/corelib/io/qfile.h"
+#"qtbase/src/corelib/io/qiodevice.h",
+#"qtbase/src/corelib/io/qfiledevice.h",
+#"qtbase/src/corelib/io/qfile.h"
+#"qtbase/src/widgets/dialogs/qdialog.h",
+#"qtbase/src/widgets/dialogs/qmessagebox.h"
+"qtbase/src/widgets/widgets/qabstractbutton.h"
     ]
 
     generator = BindingGenerator() 

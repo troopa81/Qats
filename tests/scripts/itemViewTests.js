@@ -27,18 +27,41 @@ var myTest = {
 	{
 	},
 
-	select: function()
+	selectOneFromObject: function()
 	{
-		mainWindow = Qats.getMainWindow();
-		qVerify( mainWindow );
-		
-		treeWidget = mainWindow.findChild( "_treeWidget" );
+		treeWidget = Qats.findGuiObject( "_treeWidget" );
 		qVerify( treeWidget );
 
-		index = Qats.getIndexFromPath( treeWidget, [ "foo", "bar", "tot.*" ] );
+		index = Qats.getIndexFromPath( treeWidget, "/foo/bar/tot.*" );
 		qVerify( index && index.isValid() );
 
-		Qats.selectFromQAbsractItemView( treeWidget, index );
+		QatsItemView.select( treeWidget, index );
+
+		qVerify( QatsItemView.isSelected( treeWidget, index ) );
+	},
+
+	selectOneFromString: function()
+	{
+		var widget = "_treeWidget";
+		var path = "/foo/bar/tot.*";
+		
+		QatsItemView.select( widget, path );
+
+		qVerify( QatsItemView.isSelected( widget, path ) );
+	},
+
+	selectSeveralFromStringAndObject: function()
+	{
+		var widget = "_treeWidget";
+
+		index = Qats.getIndexFromPath( treeWidget, "/foo/bar/tot.*" );
+		qVerify( index && index.isValid() );
+
+		var paths = [ index, "/foo/bar/tit.*"];
+		
+		QatsItemView.select( widget, paths );
+
+		qVerify( QatsItemView.isSelected( widget, paths ) );
 	},
 
 	action: function()
@@ -49,7 +72,7 @@ var myTest = {
 		treeWidget = mainWindow.findChild( "_treeWidget" );
 		qVerify( treeWidget );
 
-		index = Qats.getIndexFromPath( treeWidget, [ "foo", "bar", "to.*" ] );
+		index = Qats.getIndexFromPath( treeWidget, "/foo/bar/to.*" );
 		qVerify( index && index.isValid() );
 
 		QatsItemView.executeAction( treeWidget, index, "testAction" );
@@ -65,7 +88,7 @@ var myTest = {
 		treeWidget = Qats.findGuiObject( "_treeWidget" );
 		qVerify( treeWidget );
 
-		index = Qats.getIndexFromPath( treeWidget, [ "foo", "bar", "to.*" ] );
+		index = Qats.getIndexFromPath( treeWidget, "/foo/bar/to.*" );
 		qVerify( index ); 
 		qVerify( index.isValid() );
 
@@ -85,7 +108,7 @@ var myTest = {
 		treeWidget = mainWindow.findChild( "_treeWidgetCustomContextMenu" );
 		qVerify( treeWidget );
 
-		index = Qats.getIndexFromPath( treeWidget, [ "foo", "bar", "to.*" ] );
+		index = Qats.getIndexFromPath( treeWidget, "/foo/bar/to.*" );
 		qVerify( index && index.isValid() );
 
 		QatsItemView.executeAction( treeWidget, index, "testAction", false );
@@ -101,7 +124,7 @@ var myTest = {
 		treeWidget = Qats.findGuiObject( "_treeWidgetCustomContextMenu" );
 		qVerify( treeWidget );
 
-		index = Qats.getIndexFromPath( treeWidget, [ "foo", "bar", "to.*" ] );
+		index = Qats.getIndexFromPath( treeWidget, "/foo/bar/to.*" );
 		qVerify( index ); 
 		qVerify( index.isValid() );
 
@@ -118,7 +141,7 @@ var myTest = {
 		treeWidget = Qats.findGuiObject( "_treeWidget" );
 		qVerify( treeWidget );
 
-		index = Qats.getIndexFromPath( treeWidget, [ "foo", "bar", "to.*" ] );
+		index = Qats.getIndexFromPath( treeWidget, "/foo/bar/to.*" );
 		qVerify( index ); 
 		qVerify( index.isValid() );
 
@@ -137,7 +160,7 @@ var myTest = {
 		treeWidget = Qats.findGuiObject( "_treeWidgetCustomContextMenu" );
 		qVerify( treeWidget );
 
-		index = Qats.getIndexFromPath( treeWidget, [ "foo", "bar", "to.*" ] );
+		index = Qats.getIndexFromPath( treeWidget, "/foo/bar/to.*" );
 		qVerify( index ); 
 		qVerify( index.isValid() );
 

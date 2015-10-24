@@ -26,22 +26,32 @@ var myTest = {
 	initTestCase: function() 
 	{
 	},
-
+/*
 	toolBarAction: function()
 	{
-		mainWindow = Qats.getMainWindow();
-		qVerify( mainWindow );
-
-		testLabel = mainWindow.findChild( "_testLabel" );
+		var testLabel = Qats.findGuiObject( "_testLabel" );
 		qVerify( testLabel );
 
 		// reset label
 		testLabel.text = "";
 
-		toolBarAction = mainWindow.findChild( "toolBarAction" );
+		var toolBarAction = Qats.findGuiObject( "toolBarAction" );
 		qVerify( toolBarAction );
 
-		Qats.executeActionFromQToolBar( toolBarAction );
+		QatsToolBar.executeAction( toolBarAction );
+
+		qVerify( testLabel.text == "toolBarActionTriggered" ) 
+	},
+
+	toolBarActionFromString: function()
+	{
+		var testLabel = Qats.findGuiObject( "_testLabel" );
+		qVerify( testLabel );
+
+		// reset label
+		testLabel.text = "";
+
+		QatsToolBar.executeAction( "toolBarAction" );
 
 		qVerify( testLabel.text == "toolBarActionTriggered" ) 
 	},
@@ -61,18 +71,41 @@ var myTest = {
 
 		qVerify( editWidget.text == text );
 	},
-
-	dialogYes : function()
+*/
+	dialogAccept : function()
 	{
-		mainWindow = Qats.getMainWindow();
-		qVerify( mainWindow );
+		var testLabel = Qats.findGuiObject( "_testLabel" );
+		qVerify( testLabel );
 
-		openDialogBtn = mainWindow.findChild( "_openDialog" );
+		// reset label
+		testLabel.text = "";
+
+		openDialogBtn = Qats.findGuiObject( "_openDialog" );
 		qVerify( openDialogBtn );
 
 		Qats.delayedAction( Qats.acceptDialog, Qats.activeDialogVisible );
 
 		QTest.mouseClick( openDialogBtn, Qt.LeftButton ); 
+
+		qVerify( testLabel.text == "DialogNo" ) 
+	},
+
+	dialogYes : function()
+	{
+		var testLabel = Qats.findGuiObject( "_testLabel" );
+		qVerify( testLabel );
+
+		// reset label
+		testLabel.text = "";
+
+		openDialogBtn = Qats.findGuiObject( "_openDialog" );
+		qVerify( openDialogBtn );
+
+		Qats.delayedAction( function(){ QatsMessageBox.clickButton( QMessageBox.Yes ) }, Qats.activeDialogVisible );
+
+		QTest.mouseClick( openDialogBtn, Qt.LeftButton ); 
+
+		qVerify( testLabel.text == "DialogYes" ) 
 	},
 
 	comboBoxSelect: function()
