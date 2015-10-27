@@ -234,20 +234,6 @@ Qats.getTopLevelWidget = function( widgetType )
 	return null;
 }
 
-Qats.findChildWithType = function( object, typeName )
-{
-	for( i=0; i<object.children().count(); i++ )
-	{
-		child = object.children().at( i ); 
-		if ( child.inherits( typeName ) )
-		{
-			return child;
-		}
-	}
-
-	return null;
-}
-
 Qats.activeDialog = function()
 {
 	return Qats.getTopLevelWidget( "QDialog" );
@@ -327,7 +313,8 @@ Qats.delayedAction = function( action, triggerCondition, timeout )
 }
 
 /*! 
-  \return an q QModelIndex of item at the given path in the \param treeView
+  \return a QModelIndex of item at the given path in the \param treeView. \return null if item doesn't 
+  exist
   \param treeView can be an object that extends QAbstractItemView or a its name
   \param path list of nodes separated with '/'. Manage wildcard. Plan to manage XPath in the future
 */
@@ -365,12 +352,19 @@ Qats.getIndexFromPath = function( treeView, path )
 		treeView.setExpanded( index, true ); // expand because of lazy treeview
 	}
 	
-	return index;
+	return index.isValid() ? index : null;
 }
 
 Qats.findChildWithType = function( object, typeName )
 {
-	for( i=0; i<object.children().length; i++ )
+	qVerify( typeof typeName === 'string' );
+
+	if ( !object )
+	{
+		return null;
+	}
+
+ 	for( i=0; i<object.children().length; i++ )
 	{
 		child = object.children()[ i ]; 
 		if ( child.inherits( typeName ) )
@@ -385,23 +379,25 @@ Qats.findChildWithType = function( object, typeName )
 QatsToolBar = {}
 QatsToolBar.executeAction = function( action )
 {
+	qVerify( action, "'action' parameter is null" );
+
 	action = typeof action === 'string' ? Qats.findGuiObject( action ) : action;
-	qVerify( action );
+	qVerify( action, "Cannot find action '" + action + "'" );
 
 	mainWindow = Qats.getMainWindow();
-	qVerify( mainWindow );
+	qVerify( mainWindow, "Cannot find main window" );
 
 	toolBar = Qats.findChildWithType( mainWindow, "QToolBar" );
-	qVerify( toolBar );
+	qVerify( toolBar, "Cannot find main window tool bar" );
 
 	center = toolBar.actionGeometry( action ).center();
-	qVerify( !center.isNull() );
+	qVerify( !center.isNull(), "Cannot find action '" + action.objectName + "' from tool bar" );
 
 	child = toolBar.childAt( center );
-	qVerify( child );
+	qVerify( child, "Cannot find widget at position '" + center + "'"  );
 
 	center = child.rect.center();
-	qVerify( !center.isNull() );
+	qVerify( !center.isNull(), "Widget center is null" );
 
 	QTest.mouseClick( child, Qt.LeftButton, Qt.NoModifier, center );
 }
@@ -488,8 +484,22 @@ Qats.listProperties = function(obj)
 
 QatsComboBox = {}
 
+/*!
+  select item from a QComboBox
+  \param comboBox a QComboBox object or a its objectName
+  \param value can be : 
+  - a number : row to be selected
+  - a string : string value to be selected. Regular expression is supported. It must be unique, else it
+  fails.
+*/
 QatsComboBox.select = function( comboBox, value )
 {
+	qVerify( comboBox, "Invalid 'comboBox' parameter" );
+	comboBox = typeof comboBox === 'string' ? Qats.findGuiObject( comboBox ) : comboBox;
+	qVerify( comboBox, "Cannot find '" + comboBox + "' comboBox" );
+
+	qVerify( value, "Invalid 'value' parameter" );
+
 	// open combo
 	QTest.mouseClick( comboBox, Qt.LeftButton );
 
@@ -502,6 +512,15 @@ QatsComboBox.select = function( comboBox, value )
 
 	var model = view.model();
 	qVerify( model );
+
+	// in case we have a textual value
+	if ( typeof value === 'string' )
+ 	{
+		var indexes = model.match( model.index( 0, 0 ), Qt.DisplayRole, value, 1, Qt.MatchRegExp );
+		qCompare( indexes.length, 1, "Not exactly one match for '" + value + "' in comboBox '" + comboBox.objectName + "'" );
+		qVerify( indexes[ 0 ], "match returned index is null" ); // not suppose to happen
+		value = indexes[ 0 ].row(); 
+	}
 
 	var index = model.index( value, 0 ); 
 	qVerify( index );
@@ -682,6 +701,7 @@ Qats.getAction = function( action, menu )
   \param index item on which Qats has to trigger the action. Can be : 
      - a QModelIndex
 	 - a path to the item (\sa getIndexFromPath)
+	 - a list of mixed QModelIndex or item path
   \param actions could be a : 
      - a QAction object 
 	 - an action object name
@@ -690,7 +710,7 @@ Qats.getAction = function( action, menu )
   \param blockingContextMenu true if the contextmenu block Qt event loop. Default is true. It must be
   always true except if you display the menu by yourself using the popup, setVisible or show method
 */
-QatsItemView.executeAction = function( itemView, index, actions, blockingContextMenu )
+QatsItemView.executeAction = function( itemView, indexes, actions, blockingContextMenu )
 {
 	// get item view
 	qVerify( itemView );
@@ -707,13 +727,34 @@ QatsItemView.executeAction = function( itemView, index, actions, blockingContext
 		blockingContextMenu : true; 
 
 	// index can be an array defining a path
-	qVerify( index );
+	qVerify( indexes );
+
+	var index = null;
+	if ( Qats.isArray( indexes )  )
+	{
+		qVerify( indexes.length, "'indexes' array is empty" );
+
+		// select all item
+		QatsItemView.select( itemView, indexes );
+
+		// click last one to trigger action
+		index = indexes[ indexes.length - 1 ];
+	}
+	// not an array
+	else
+	{
+		index = indexes; 
+	}
+
 	index = typeof index === 'string' ? Qats.getIndexFromPath( itemView, index ) : index;
 	qVerify( index );
 	qVerify( index.isValid() );
 
 	qVerify( actions );
 	actions = [].concat( actions );
+
+	// scroll to index to be sure item is visible
+	itemView.scrollTo( index );
 
 	var rect = itemView.visualRect( index ); 
 	qVerify( rect.isValid() );
@@ -773,7 +814,8 @@ QatsItemView.executeAction = function( itemView, index, actions, blockingContext
 
 	// Move is mandatory because else, menu is displayed under mouse position, everywhere on the 
 	// desktop
-	QTest.mouseClick( itemView.viewport(), Qt.RightButton, Qt.NoModifier, center );
+	// Don't forget Qt.ControlModifier if we have multi selection before
+	QTest.mouseClick( itemView.viewport(), Qt.RightButton, Qats.isArray( indexes ) ? Qt.ControlModifier : Qt.NoModifier, center );
 	QTest.mouseMove( itemView.viewport(), center );
 	QTest.postContextMenuEvent( itemView.viewport(), center );
 	QApplication.processEvents();
