@@ -92,6 +92,7 @@ class BindingGenerator:
             constructorName = "script" + self.cppClass[ 'name' ] + "Constructor";
             self.f.write("inline QScriptValue " + constructorName + "(QScriptContext *context, QScriptEngine *engine)\n");
             self.f.write("{\n");
+            self.f.write("Q_UNUSED(context);\n");
 # TODO set the parent correctly. QWidget take QWidget as parent not QObject, so this need a cast
 #            self.f.write("QObject *parent = context->argument(0).toQObject();\n");
             self.f.write( self.cppClass['name'] + " *object = new " + self.cppClass['name'] + "(0);\n");
@@ -114,6 +115,9 @@ class BindingGenerator:
             self.f.write("QScriptValue ctor = engine->newFunction(" + scriptConstructorName + ");\n");
             self.f.write("QScriptValue metaObject = engine->newQMetaObject(&" + self.cppClass[ 'name' ] + "::staticMetaObject, ctor);\n");
             self.f.write("engine->globalObject().setProperty(\"" + self.cppClass['name'] + "\", metaObject);\n");
+
+        self.f.write( "engine->globalObject().setProperty(\"" + self.cppClass['name'] + "\", engine->newQMetaObject(&"
+                      + self.cppClass['name'] + "::staticMetaObject));\n" );
 
         self.f.write("}\n")
         self.f.write("\n")
@@ -365,12 +369,12 @@ try:
 #"qtbase/src/widgets/widgets/qframe.h",
 #"qtbase/src/widgets/widgets/qframe.h",
 #"qtbase/src/widgets/kernel/qaction.h", 
-#"qtbase/src/corelib/io/qiodevice.h",
-#"qtbase/src/corelib/io/qfiledevice.h",
-#"qtbase/src/corelib/io/qfile.h"
+"qtbase/src/corelib/io/qiodevice.h",
+"qtbase/src/corelib/io/qfiledevice.h",
+"qtbase/src/corelib/io/qfile.h"
 #"qtbase/src/widgets/dialogs/qdialog.h",
 #"qtbase/src/widgets/dialogs/qmessagebox.h"
-"qtbase/src/widgets/widgets/qabstractbutton.h"
+#"qtbase/src/widgets/widgets/qabstractbutton.h"
     ]
 
     generator = BindingGenerator() 

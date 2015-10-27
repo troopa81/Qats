@@ -33,8 +33,8 @@
 
 inline QScriptValue scriptQFileConstructor(QScriptContext *context, QScriptEngine *engine)
 {
-QObject *parent = context->argument(0).toQObject();
-QFile *object = new QFile(parent);
+Q_UNUSED(context);
+QFile *object = new QFile(0);
 return engine->newQObject(object, QScriptEngine::ScriptOwnership);
 }
 
@@ -54,6 +54,7 @@ engine->setDefaultPrototype(qMetaTypeId<QFile*>(), engine->newQObject(new QFileP
 QScriptValue ctor = engine->newFunction(scriptQFileConstructor);
 QScriptValue metaObject = engine->newQMetaObject(&QFile::staticMetaObject, ctor);
 engine->globalObject().setProperty("QFile", metaObject);
+engine->globalObject().setProperty("QFile", engine->newQMetaObject(&QFile::staticMetaObject));
 }
 
 QFilePrototype(QObject* parent = 0):QFileDevicePrototype(parent){}
@@ -77,7 +78,7 @@ QString decodeName(const QByteArray & localFileName)
 {
 return QFile::decodeName(localFileName);
 }
-static QString decodeName(const char * localFileName)
+QString decodeName(const char * localFileName)
 {
 return QFile::decodeName(localFileName);
 }
@@ -104,7 +105,7 @@ inline QString symLinkTarget()
 QFile *object = qscriptvalue_cast<QFile*>(thisObject());
 return object->symLinkTarget();
 }
-static QString symLinkTarget(const QString & fileName)
+QString symLinkTarget(const QString & fileName)
 {
 return QFile::symLinkTarget(fileName);
 }

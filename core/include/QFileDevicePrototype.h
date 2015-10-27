@@ -44,6 +44,7 @@ static void registerToScriptEngine(QScriptEngine* engine)
 {
 engine->setDefaultPrototype(qMetaTypeId<QFileDevice*>(), engine->newQObject(new QFileDevicePrototype(engine)));
 
+engine->globalObject().setProperty("QFileDevice", engine->newQMetaObject(&QFileDevice::staticMetaObject));
 }
 
 QFileDevicePrototype(QObject* parent = 0):QIODevicePrototype(parent){}
