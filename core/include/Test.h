@@ -85,6 +85,8 @@ public slots:
 	void sendMessage( MessageType type, QStringList content );
 	QStringList getBacktrace(); 
 	void include( const QString& scriptFile );
+	QString getCurrentScriptFile() const; 
+	QString getCurrentScriptDir() const; 
 
 protected:
 

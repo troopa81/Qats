@@ -47,12 +47,18 @@ function qWarn(message) {
 
 function qCompareFile(file1, file2)
 {
-	f1 = new QFile( file1 );
-	// TODO correct : add enums
-	qVerify( f1.open( QIODevice.ReadOnly ) ); 
+	// TODO enum not declared with Q_ENUM are not defined in javascript
+	QIODevice.ReadOnly = 1; 
 
-	f2 = new QFile( file2 );
-	qVerify( f2.open( QIODevice.ReadOnly ) ); 
+	f1 = new QFile();
+	f1.setFileName( file1 );
+	qVerify( f1.open( QIODevice.ReadOnly ), "Cannot open file '" + file1 + "'" ); 
+
+	f2 = new QFile();
+	f2.setFileName( file2 );
+	qVerify( f2.open( QIODevice.ReadOnly ), "Cannot open file '" + file2 + "'" ); 
+
+	qVerify( f1.readAll() == f2.readAll(), "'" + file1 + "' and '" + file2 + "' are different" );
 }
 
 Qats.executeTestCase = function(testcase) {

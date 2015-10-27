@@ -102,7 +102,14 @@ var myTest = {
 
 	diffTest: function()
 	{
-		qCompareFile( "/tmp/toto", "/tmp/tutu" );
+		var filePath = Qats.getCurrentScriptDir() + "/data/foo.txt"; 
+		qCompareFile( filePath, filePath );
+	},
+
+	diffTestFail: function()
+	{
+		qCompareFile( Qats.getCurrentScriptDir() + "/data/foo.txt", 
+					  Qats.getCurrentScriptDir() + "/data/bar.txt" );
 	},
 
 	cleanupTestCase: function() {}

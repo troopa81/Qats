@@ -113,11 +113,16 @@ class BindingGenerator:
         # script constructor only if class is not abstract 
         if scriptConstructorName :
             self.f.write("QScriptValue ctor = engine->newFunction(" + scriptConstructorName + ");\n");
-            self.f.write("QScriptValue metaObject = engine->newQMetaObject(&" + self.cppClass[ 'name' ] + "::staticMetaObject, ctor);\n");
-            self.f.write("engine->globalObject().setProperty(\"" + self.cppClass['name'] + "\", metaObject);\n");
 
-        self.f.write( "engine->globalObject().setProperty(\"" + self.cppClass['name'] + "\", engine->newQMetaObject(&"
-                      + self.cppClass['name'] + "::staticMetaObject));\n" );
+        self.f.write("QScriptValue metaObject = engine->newQMetaObject(&" + self.cppClass[ 'name' ] + "::staticMetaObject" ); 
+
+        if scriptConstructorName : 
+            self.f.write( ", ctor" ); 
+
+        self.f.write( ");\n");
+
+        # even if class is abstract we need an instance in order to access specific enum
+        self.f.write("engine->globalObject().setProperty(\"" + self.cppClass['name'] + "\", metaObject);\n");
 
         self.f.write("}\n")
         self.f.write("\n")

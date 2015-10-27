@@ -45,6 +45,7 @@
 #include <QToolBar>
 #include <QCheckBox>
 #include <QStaticAssertFailure>
+#include <QScriptContextInfo>
 
 #include "Test.h"
 #include "Client.h"
@@ -366,6 +367,25 @@ void Test::include( const QString& scriptFile )
 		sendMessage( FAIL, QStringList() << QString( "Cannot include file '%1'" ).arg( scriptFile )
 					 << getBacktrace() );
 	}
+}
+
+/*! 
+  \return the current script filename
+*/
+QString Test::getCurrentScriptFile() const 
+{
+	// get parent context (current one is the native one)
+	QScriptContext* parentContext = _scriptEngine->currentContext()->parentContext(); 
+
+	return parentContext ? QScriptContextInfo( parentContext ).fileName() : QString();
+}
+
+/*! 
+  \return the current script directory
+*/
+QString Test::getCurrentScriptDir() const
+{
+	return QFileInfo( getCurrentScriptFile() ).absolutePath();
 }
 
 }

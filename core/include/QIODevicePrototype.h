@@ -44,7 +44,8 @@ static void registerToScriptEngine(QScriptEngine* engine)
 {
 engine->setDefaultPrototype(qMetaTypeId<QIODevice*>(), engine->newQObject(new QIODevicePrototype(engine)));
 
-engine->globalObject().setProperty("QIODevice", engine->newQMetaObject(&QIODevice::staticMetaObject));
+QScriptValue metaObject = engine->newQMetaObject(&QIODevice::staticMetaObject);
+engine->globalObject().setProperty("QIODevice", metaObject);
 }
 
 QIODevicePrototype(QObject* parent = 0):QObjectPrototype(parent){}

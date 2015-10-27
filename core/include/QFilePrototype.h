@@ -54,7 +54,6 @@ engine->setDefaultPrototype(qMetaTypeId<QFile*>(), engine->newQObject(new QFileP
 QScriptValue ctor = engine->newFunction(scriptQFileConstructor);
 QScriptValue metaObject = engine->newQMetaObject(&QFile::staticMetaObject, ctor);
 engine->globalObject().setProperty("QFile", metaObject);
-engine->globalObject().setProperty("QFile", engine->newQMetaObject(&QFile::staticMetaObject));
 }
 
 QFilePrototype(QObject* parent = 0):QFileDevicePrototype(parent){}
