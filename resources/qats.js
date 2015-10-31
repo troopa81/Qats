@@ -200,8 +200,12 @@ Qats.mouseTClick = function( widget, button )
 
 Qats.typeText = function( parent, widgetName, text )
 {
+	qVerify( parent, "Parameter 'parent' is null" );
+	parent = typeof parent === 'string' ? Qats.findGuiObject( parent ) : parent;
+	qVerify( parent, "Cannot find parameter '" + parent + "' in main window" );
+
 	editWidget = parent.findChild( widgetName ); 
-	qVerify( editWidget );
+	qVerify( editWidget, "Cannot find widget '" + widgetName + "' as in '" + parent.objectName + "' widget" );
 
 	metaObject = editWidget.metaObject(); 
 	qVerify( metaObject ); 
