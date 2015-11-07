@@ -562,10 +562,21 @@ Qats.findGuiObject = function( objectName )
 }
 
 QatsItemView = {}
+
+/*! 
+  change check state of an \param itemViewn item
+  \param itemView an itemView
+  \param index a QModelIndex item or path to the item
+  \param isChecked true if item has to be checked
+*/
 QatsItemView.setChecked = function( itemView, index, isChecked )
 {
 	qVerify( itemView ); 
+
 	qVerify( index ); 
+	index = typeof index === 'string' ? Qats.getIndexFromPath( itemView, index ) : index; 
+	qVerify( index, "Cannot find item '" + index + "'" );
+
 	qVerify( isChecked != undefined && isChecked != null ); 
 	
 	var model = itemView.model(); 
