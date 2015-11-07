@@ -64,7 +64,7 @@ class BindingGenerator:
     def findEnum( self, enumName ):
         for (className, enums) in self.globalEnums.iteritems():
             for enum in enums:
-                if enum['name'] == enumName:
+                if 'name' in enum and enum['name'] == enumName:
                     return ( className, enum )
 
         return (None,None)
@@ -191,10 +191,11 @@ class BindingGenerator:
                 if inheritedClass['access'] == "public":
 
                     # not suppose to happen with Qt
+                    # happen only for QWidget (keeps only first inherited which is QObject
                     if inherited != "":
-                        print( "Error : multiple inheritance" );
-
-                    inherited = inheritedClass['class'] + "Prototype";
+                        print( "Error : multiple inheritance, take first inherited class" );
+                    else:
+                        inherited = inheritedClass['class'] + "Prototype";
 
             self.f.write("\n")
             self.f.write("#include <QObject>\n")
@@ -204,7 +205,9 @@ class BindingGenerator:
             self.f.write("#include <" + className + ">\n")
             self.f.write("\n")
 
-            self.f.write("#include \"" + inherited + ".h\"\n");
+            if inherited != "":
+                self.f.write("#include \"" + inherited + ".h\"\n");
+
             self.f.write("\n")
 
             scriptConstructorName = self.generateScriptConstructor();
@@ -215,7 +218,7 @@ class BindingGenerator:
 
             self.f.write("class " + protoClassName ); 
 
-            self.f.write( " : public " + inherited if inherited != "" else "QObject, public QScriptable")
+            self.f.write( " : public " + inherited if inherited != "" else " QObject, public QScriptable")
 
             self.f.write( "\n" );
             self.f.write("{\n")
