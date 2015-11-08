@@ -52,6 +52,9 @@ class BindingGenerator:
         self.cppClass = None
         self.hasPublicConstructor = False
         self.isAbstract = False
+        self.classInherits = {}
+        self.inherited = ""; 
+
     def findEnumFromValue( self, enumValueName ):
         for (className, enums) in self.globalEnums.iteritems():
             for enum in enums:
@@ -85,44 +88,70 @@ class BindingGenerator:
         else:
             return typeName
 
+    # return true if current class inherits from QObject
+    def inheritsQObject(self): 
+        parentClass = self.inherited; 
+        while parentClass in self.classInherits:
+            parentClass = self.classInherits[ parentClass ];
+
+        return self.cppClass[ 'name' ] == "QObject" or parentClass == "QObject"; 
+
     def generateScriptConstructor(self):
 
         # script constructor only if class is not abstract and have a public constructor
-        if not self.isAbstract and self.hasPublicConstructor:
-            constructorName = "script" + self.cppClass[ 'name' ] + "Constructor";
-            self.f.write("inline QScriptValue " + constructorName + "(QScriptContext *context, QScriptEngine *engine)\n");
-            self.f.write("{\n");
-            self.f.write("Q_UNUSED(context);\n");
-# TODO set the parent correctly. QWidget take QWidget as parent not QObject, so this need a cast
-#            self.f.write("QObject *parent = context->argument(0).toQObject();\n");
+        if self.isAbstract or not self.hasPublicConstructor:
+            return None
+
+        constructorName = "script" + self.cppClass[ 'name' ] + "Constructor";
+        self.f.write("inline QScriptValue " + constructorName + "(QScriptContext *context, QScriptEngine *engine)\n");
+        self.f.write("{\n");
+        self.f.write("Q_UNUSED(context);\n");
+
+        # TODO manage parameters for constructor
+        #for method in self.cppClass[ 'methods' ]['public']:
+        #    if method[ 'constructor' ]:
+        #        print( "coucou" )
+        #        for iParameter in range( 0, len(method['parameters'])) :
+        #            print( "type="  + method['parameters'][ iParameter ]['type'] );
+
+        if self.inheritsQObject(): 
+            # TODO set the parent correctly. QWidget take QWidget as parent not QObject, so this need a cast
+            #            self.f.write("QObject *parent = context->argument(0).toQObject();\n");
             self.f.write( self.cppClass['name'] + " *object = new " + self.cppClass['name'] + "(0);\n");
             self.f.write("return engine->newQObject(object, QScriptEngine::ScriptOwnership);\n");
-            self.f.write("}\n\n");
-            return constructorName
         else:
-            return None
+            self.f.write( self.cppClass['name'] + " object;\n" );
+            self.f.write( "return engine->newVariant( QVariant( object ) );");
+
+        self.f.write("}\n\n");
+        return constructorName
 
     def generateEngineRegistration( self, scriptConstructorName ):
         
         self.f.write("static void registerToScriptEngine(QScriptEngine* engine)\n")
         self.f.write("{\n")
-        self.f.write("engine->setDefaultPrototype(qMetaTypeId<"); 
-        self.f.write( self.cppClass[ 'name' ] ); 
-        self.f.write( "*>(), engine->newQObject(new " + self.cppClass['name'] + "Prototype(engine)));\n\n" )
+
+        for strType in [ self.cppClass[ 'name' ], self.cppClass[ 'name' ] + "*" ]:
+            self.f.write("engine->setDefaultPrototype(qMetaTypeId<"); 
+            self.f.write( strType ); 
+            self.f.write( ">(), engine->newQObject(new " + self.cppClass['name'] + "Prototype(engine)));\n" )
+
+        self.f.write("\n")
         
         # script constructor only if class is not abstract 
         if scriptConstructorName :
             self.f.write("QScriptValue ctor = engine->newFunction(" + scriptConstructorName + ");\n");
 
-        self.f.write("QScriptValue metaObject = engine->newQMetaObject(&" + self.cppClass[ 'name' ] + "::staticMetaObject" ); 
-
-        if scriptConstructorName : 
-            self.f.write( ", ctor" ); 
-
-        self.f.write( ");\n");
+        if self.inheritsQObject(): 
+            self.f.write("QScriptValue metaObject = engine->newQMetaObject(&" + self.cppClass[ 'name' ] + "::staticMetaObject" ); 
+            if scriptConstructorName : 
+                self.f.write( ", ctor" ); 
+                
+            self.f.write( ");\n");
 
         # even if class is abstract we need an instance in order to access specific enum
-        self.f.write("engine->globalObject().setProperty(\"" + self.cppClass['name'] + "\", metaObject);\n");
+        self.f.write("engine->globalObject().setProperty(\"" + self.cppClass['name'] + "\", "
+                     + ( "metaObject" if self.inheritsQObject() else "ctor" ) + ");\n");
 
         self.f.write("}\n")
         self.f.write("\n")
@@ -186,16 +215,18 @@ class BindingGenerator:
             self.f.write("#define _" + protoClassName.upper() + "_\n");
 
             # get possible inheritance
-            inherited = "";
+            self.inherited = "";
             for inheritedClass in self.cppClass['inherits']:
                 if inheritedClass['access'] == "public":
 
                     # not suppose to happen with Qt
                     # happen only for QWidget (keeps only first inherited which is QObject
-                    if inherited != "":
+                    if self.inherited != "":
                         print( "Error : multiple inheritance, take first inherited class" );
                     else:
-                        inherited = inheritedClass['class'] + "Prototype";
+                        self.inherited = inheritedClass['class'] + "Prototype";
+
+            self.classInherits[ className ] = self.inherited;
 
             self.f.write("\n")
             self.f.write("#include <QObject>\n")
@@ -205,8 +236,8 @@ class BindingGenerator:
             self.f.write("#include <" + className + ">\n")
             self.f.write("\n")
 
-            if inherited != "":
-                self.f.write("#include \"" + inherited + ".h\"\n");
+            if self.inherited != "":
+                self.f.write("#include \"" + self.inherited + ".h\"\n");
 
             self.f.write("\n")
 
@@ -218,7 +249,7 @@ class BindingGenerator:
 
             self.f.write("class " + protoClassName ); 
 
-            self.f.write( " : public " + inherited if inherited != "" else " QObject, public QScriptable")
+            self.f.write( " : public " + ( self.inherited if self.inherited != "" else " QObject, public QScriptable") )
 
             self.f.write( "\n" );
             self.f.write("{\n")
@@ -230,7 +261,7 @@ class BindingGenerator:
 
             self.generateEngineRegistration( scriptConstructorName );
 
-            self.f.write(protoClassName + "(QObject* parent = 0):"+ (inherited if inherited != "" else "QObject") + "(parent){}\n")
+            self.f.write(protoClassName + "(QObject* parent = 0):"+ (self.inherited if self.inherited != "" else "QObject") + "(parent){}\n")
 
             self.f.write("public slots:\n")
             self.f.write("\n")
@@ -241,7 +272,7 @@ class BindingGenerator:
                 isStatic = method['static']
 
                 # do not treat constructor and destructor
-                if  method['constructor'] or method['destructor'] or method['name'] in [ "operator=", "operator==", "operator!=", "operator<" ]:
+                if  method['constructor'] or method['destructor'] or method['name'].startswith( "operator" ):
                     continue
 
                 returnType = method['rtnType']
@@ -364,7 +395,7 @@ try:
  # "qtbase/src/corelib/kernel/qobject.h"
 #        "qtbase/src/widgets/widgets/qtoolbar.h"
 # "qtbase/src/corelib/tools/qrect.h"
- #"qtbase/src/corelib/tools/qpoint.h"
+ "qtbase/src/corelib/tools/qpoint.h"
 #"qtbase/src/corelib/itemmodels/qitemselectionmodel.h"
 #"qtbase/src/widgets/widgets/qabstractscrollarea.h"
 #"qtbase/src/corelib/kernel/qcoreapplication.h"
@@ -377,9 +408,9 @@ try:
 #"qtbase/src/widgets/widgets/qframe.h",
 #"qtbase/src/widgets/widgets/qframe.h",
 #"qtbase/src/widgets/kernel/qaction.h", 
-"qtbase/src/corelib/io/qiodevice.h",
-"qtbase/src/corelib/io/qfiledevice.h",
-"qtbase/src/corelib/io/qfile.h"
+#"qtbase/src/corelib/io/qiodevice.h",
+#"qtbase/src/corelib/io/qfiledevice.h",
+#"qtbase/src/corelib/io/qfile.h"
 #"qtbase/src/widgets/dialogs/qdialog.h",
 #"qtbase/src/widgets/dialogs/qmessagebox.h"
 #"qtbase/src/widgets/widgets/qabstractbutton.h"

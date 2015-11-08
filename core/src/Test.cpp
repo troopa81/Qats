@@ -75,6 +75,8 @@
 #include "QMessageBoxPrototype.h"
 #include "QDialogPrototype.h"
 #include "QAbstractButtonPrototype.h"
+#include "QPointPrototype.h"
+
 // #include "QElapsedTimerPrototype.h"
 //#include "QContextMenuEventPrototype.h"
 
@@ -152,7 +154,8 @@ int Test::executeTest(const QString& scriptFilePath, int delay )
 	QMessageBoxPrototype::registerToScriptEngine( _scriptEngine );
 	QDialogPrototype::registerToScriptEngine( _scriptEngine );
 	QAbstractButtonPrototype::registerToScriptEngine( _scriptEngine );
-
+	QPointPrototype::registerToScriptEngine( _scriptEngine );
+	
 	qScriptRegisterSequenceMetaType< QWidgetList >(_scriptEngine);
 	qScriptRegisterSequenceMetaType< QObjectList >(_scriptEngine);
 	qScriptRegisterSequenceMetaType< QModelIndexList >(_scriptEngine);
@@ -186,8 +189,6 @@ int Test::executeTest(const QString& scriptFilePath, int delay )
 	_scriptEngine->setDefaultPrototype(qMetaTypeId<QToolBar*>(), _scriptEngine->newQObject(new QToolBarPrototype) );
 	_scriptEngine->setDefaultPrototype(qMetaTypeId<QRect*>(), _scriptEngine->newQObject(new QRectPrototype) );
 	_scriptEngine->setDefaultPrototype(qMetaTypeId<QRect>(), _scriptEngine->newQObject(new QRectPrototype) );
-	_scriptEngine->setDefaultPrototype(qMetaTypeId<QPoint*>(), _scriptEngine->newQObject(new QPointPrototype) );
-	_scriptEngine->setDefaultPrototype(qMetaTypeId<QPoint>(), _scriptEngine->newQObject(new QPointPrototype) );
 	_scriptEngine->setDefaultPrototype(qMetaTypeId<QItemSelectionModel*>(), _scriptEngine->newQObject(new QItemSelectionModelPrototype) );
 	_scriptEngine->setDefaultPrototype(qMetaTypeId<QAbstractScrollArea*>(), _scriptEngine->newQObject(new QAbstractScrollAreaPrototype) );
 	_scriptEngine->setDefaultPrototype(qMetaTypeId<QCoreApplication*>(), _scriptEngine->newQObject(new QCoreApplicationPrototype) );

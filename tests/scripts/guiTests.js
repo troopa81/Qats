@@ -26,7 +26,7 @@ var myTest = {
 	initTestCase: function() 
 	{
 	},
-/*
+
 	toolBarAction: function()
 	{
 		var testLabel = Qats.findGuiObject( "_testLabel" );
@@ -71,7 +71,7 @@ var myTest = {
 
 		qVerify( editWidget.text == text );
 	},
-*/
+
 	dialogAccept : function()
 	{
 		var testLabel = Qats.findGuiObject( "_testLabel" );
@@ -118,6 +118,20 @@ var myTest = {
 
 		// TODO try with string instead of index! 
 		QatsComboBox.select( comboBox, 2 );
+	},
+	
+	mouseClickPosition: function()
+	{
+		var mainWindow = Qats.getMainWindow();  
+		qVerify( mainWindow );
+
+		Qats.mouseClick( mainWindow, Qt.LeftButton, Qt.ControlModifier, 50, 60 );
+
+		var testLabel = Qats.findGuiObject( "_testLabel" );
+		qVerify( testLabel );
+
+		// reset label
+		testLabel.text = "50 60";
 	},
 
 	cleanupTestCase: function() {}

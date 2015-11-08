@@ -57,6 +57,7 @@ class QATS_EXPORT TestMainWindow : public QMainWindow
   protected: 
 
 	  void initMenuActions();
+	  void mousePressEvent(QMouseEvent * event);
 
 	  Ui::TestMainWindow* _ui; 
 	  QAction* _testAction; 

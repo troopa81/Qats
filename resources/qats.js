@@ -875,3 +875,22 @@ QatsMessageBox.clickButton = function( buttonId )
 
 	QTest.mouseClick( button, Qt.LeftButton );
 }
+
+/*!
+  trigger a mouse click
+  \param widget could be a QWidget or a QWidget objectName
+  \param mouse button to click
+  \param modifier Ctrl, Alt, ...
+  \param x and \paran y mouse position
+ */
+Qats.mouseClick = function( widget, button, modifier, x, y )
+{
+	qVerify( widget );
+	widget = typeof widget === 'string' ? Qats.findGuiObject( widget ) : widget;
+
+	var pt = new QPoint(); 
+	pt.setX( x ); 
+	pt.setY( y );
+
+	QTest.mouseClick( widget, Qt.LeftButton, Qt.ControlModifier, pt );
+}

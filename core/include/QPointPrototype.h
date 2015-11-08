@@ -29,29 +29,45 @@
 #include <QScriptEngine>
 #include <QPoint>
 
+
+inline QScriptValue scriptQPointConstructor(QScriptContext *context, QScriptEngine *engine)
+{
+Q_UNUSED(context);
+QPoint object;
+return engine->newVariant( QVariant( object ) );}
+
 namespace qats
 {
 
-class QPointPrototype : public QObject, public QScriptable
+class QPointPrototype : public  QObject, public QScriptable
 {
 Q_OBJECT
 
 public:
 
+static void registerToScriptEngine(QScriptEngine* engine)
+{
+engine->setDefaultPrototype(qMetaTypeId<QPoint>(), engine->newQObject(new QPointPrototype(engine)));
+engine->setDefaultPrototype(qMetaTypeId<QPoint*>(), engine->newQObject(new QPointPrototype(engine)));
+
+QScriptValue ctor = engine->newFunction(scriptQPointConstructor);
+engine->globalObject().setProperty("QPoint", ctor);
+}
+
 QPointPrototype(QObject* parent = 0):QObject(parent){}
 public slots:
 
- inline bool isNull()
+Q_DECL_CONSTEXPR inline bool isNull()
 {
 QPoint *object = qscriptvalue_cast<QPoint*>(thisObject());
 return object->isNull();
 }
- inline int x()
+Q_DECL_CONSTEXPR inline int x()
 {
 QPoint *object = qscriptvalue_cast<QPoint*>(thisObject());
 return object->x();
 }
- inline int y()
+Q_DECL_CONSTEXPR inline int y()
 {
 QPoint *object = qscriptvalue_cast<QPoint*>(thisObject());
 return object->y();
@@ -66,7 +82,7 @@ inline void setY(int y)
 QPoint *object = qscriptvalue_cast<QPoint*>(thisObject());
 return object->setY(y);
 }
- inline int manhattanLength()
+Q_DECL_CONSTEXPR inline int manhattanLength()
 {
 QPoint *object = qscriptvalue_cast<QPoint*>(thisObject());
 return object->manhattanLength();
@@ -81,11 +97,10 @@ inline int & ry()
 QPoint *object = qscriptvalue_cast<QPoint*>(thisObject());
 return object->ry();
 }
-static inline int dotProduct(const QPoint & p1,const QPoint & p2)
+inline int dotProduct(const QPoint & p1,const QPoint & p2)
 {
 return QPoint::dotProduct(p1,p2);
 }
-
 };
 }
 

@@ -24,6 +24,7 @@
 #include <QThread>
 
 #include <QMessageBox>
+#include <QMouseEvent>
 #include <QAction>
 
 #include "ui_TestMainWindow.h"
@@ -164,6 +165,14 @@ void TestMainWindow::onDialogActionTriggered()
 	msgBox.exec();
 
 	_ui->_testLabel->setText( sender()->objectName() + "Triggered" );
+}
+
+/*!
+  \overloaded
+ */
+void TestMainWindow::mousePressEvent(QMouseEvent * event)
+{
+	_ui->_testLabel->setText( QString( "%1 %2" ).arg( event->x() ).arg( event->y() ) );
 }
 
 }

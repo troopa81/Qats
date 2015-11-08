@@ -122,6 +122,9 @@ void Server::onMessageReceived()
 		{
 		case Test::WARN:
 			in >> message >> backtrace; 
+
+			qDebug() << "message" << message;
+
 			testFunction = _testCase ? _testCase->getCurrentTestFunction() : 0;
 			Q_ASSERT( testFunction ); 
 
