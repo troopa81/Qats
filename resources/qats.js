@@ -734,21 +734,21 @@ Qats.getAction = function( action, menu )
 QatsItemView.executeAction = function( itemView, indexes, actions, blockingContextMenu )
 {
 	// get item view
-	qVerify( itemView );
+	qVerify( itemView, "Parameter 'itemView' is null" );
 	itemView = typeof itemView === 'string' ? Qats.findGuiObject( itemView ) : itemView;
-	qVerify( itemView );
-	qVerify( itemView.inherits( "QAbstractItemView" ) );
+	qVerify( itemView, "Cannot find widget '" + itemView + "' in main window" );
+	qVerify( itemView.inherits( "QAbstractItemView" ), "widget '" + itemView + "' is not an item view" );
 
 	// be sure there is a context menu
-	qVerify( itemView.contextMenuPolicy != Qt.NoContextMenu );
-	qVerify( itemView.contextMenuPolicy != Qt.PreventContextMenu );
+	qVerify( itemView.contextMenuPolicy != Qt.PreventContextMenu && itemView.contextMenuPolicy != Qt.NoContextMenu, 
+			 "Wrong context menu policy" );
 
 	// default is true
 	blockingContextMenu = blockingContextMenu != null && blockingContextMenu != undefined ? 
 		blockingContextMenu : true; 
 
 	// index can be an array defining a path
-	qVerify( indexes );
+	qVerify( indexes, "Parameter 'indexes' is null" );
 
 	var index = null;
 	if ( Qats.isArray( indexes )  )
@@ -768,10 +768,9 @@ QatsItemView.executeAction = function( itemView, indexes, actions, blockingConte
 	}
 
 	index = typeof index === 'string' ? Qats.getIndexFromPath( itemView, index ) : index;
-	qVerify( index );
-	qVerify( index.isValid() );
+	qVerify( index, "Cannot find index '" + index + "' from item view '" + itemView.objectName + "'" );
 
-	qVerify( actions );
+	qVerify( actions, "Parameter 'actions' is null" );
 	actions = [].concat( actions );
 
 	// scroll to index to be sure item is visible
