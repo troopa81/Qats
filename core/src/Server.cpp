@@ -40,7 +40,8 @@ Server::Server( QObject* parent )
 	: QLocalServer( parent ),
 	  _localSocket( 0 ),
 	  _testCase( 0 ),
-	  _failedMessage( 0 )
+	  _failedMessage( 0 ),
+	  _process( 0 )
 {
 	connect( this, SIGNAL( newConnection() ), this, SLOT( onNewConnection() ) );
 
@@ -135,20 +136,7 @@ void Server::onMessageReceived()
 
 		case Test::FAIL:
 			in >> message >> backtrace; 
-			testFunction = _testCase ? _testCase->getCurrentTestFunction() : 0;
-			
-			messageObject = new Message( message, backtrace );
-			if ( testFunction )
-			{
-				testFunction->fail( messageObject );
-			}
-			// in case of Syntax error
-			else
-			{
-				delete _failedMessage;
-				_failedMessage = messageObject;
-			}
-			emit failMessageAdded( messageObject, testFunction );
+			onFail( message, backtrace ); 
 			break; 
 
 		case Test::FUNCTION_START:
@@ -224,6 +212,85 @@ void Server::executeTest( const QString& test )
     out << test;
 
 	Server::get()->send( block );
+}
+
+/*! 
+  start tested application
+  \param command the command to be executed
+  \param arguments command arguments
+*/
+bool Server::startTestedApplication( const QString& command, const QStringList& arguments )
+{
+	if ( _process )
+	{
+		delete _process; 
+		_process = 0;
+	}
+
+	// start tested application
+    _process = new QProcess( this );
+	connect( _process, SIGNAL( finished( int, QProcess::ExitStatus ) ), 
+			 this, SLOT( onProcessFinished( int, QProcess::ExitStatus ) ) );
+	
+    _process->start( command, arguments );
+	if ( !_process->waitForStarted() )
+	{
+		qWarning() << tr( "Cannot start application : %1").arg( QString( _process->readAllStandardError() ) );
+		return false;
+	}
+
+	return true;
+}
+
+/*!
+  close currently tested application
+ */
+void Server::closeTestedApplication()
+{
+	if ( _process )
+	{
+		delete _process; 
+		_process = 0;
+	}
+}
+
+
+/*!
+  called whenever the tested process is finished
+  \param exitCode exit code
+  \param exitStatus exit status 
+*/
+void Server::onProcessFinished( int exitCode, QProcess::ExitStatus exitStatus )
+{
+	Q_UNUSED( exitCode ); 
+	Q_UNUSED( exitStatus );
+
+	// TODO manage backtrace correctly
+	onFail( "Fatal : application has quitted unexpectedly", "" /*Test::get()->getBacktrace()*/ );
+}
+
+/*!
+  called whenever tests fails with given \param message and \param backtrace
+*/
+void Server::onFail( const QString& message, const QString& backtrace )
+{
+	TestFunction* testFunction = _testCase ? _testCase->getCurrentTestFunction() : 0;
+	
+	Message* messageObject = new Message( message, backtrace );
+	if ( testFunction )
+	{
+		testFunction->fail( messageObject );
+	}
+	// in case of Syntax error
+	else
+	{
+		delete _failedMessage;
+		_failedMessage = messageObject;
+	}
+	emit failMessageAdded( messageObject, testFunction );
+
+	// TODO to be removed (still used in MainWindow for output display) 
+	emit outputReceived();
 }
 
 };

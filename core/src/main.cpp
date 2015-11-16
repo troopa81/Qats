@@ -26,6 +26,7 @@
 #include <QDir>
 #include <QCommandLineParser>
 #include <QSharedPointer>
+#include <QSettings>
 
 #include "TestsTrigger.h"
 #include "TextOutput.h"
@@ -45,10 +46,11 @@ int main( int argc, char* argv[] )
 	qats::XunitOutput* xunitOutput = 0;
 	QApplication app( argc, argv );
 	QCoreApplication::setApplicationName("Qats");
+	QCoreApplication::setOrganizationName("Qats");
     QCoreApplication::setApplicationVersion("0.1");
+	QSettings::setDefaultFormat( QSettings::IniFormat );
 
     QCommandLineParser parser;
-
     parser.setApplicationDescription( tr( "Qt Automated Test Scripting\n\
 Qats is an application designed to execute javascript tests inside a Qt	\
 application, in order to easily and rapidely write end to end tests." ) );

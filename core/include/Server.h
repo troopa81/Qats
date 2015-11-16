@@ -24,6 +24,7 @@
 #define QATS_SERVER_H
 
 #include <QLocalServer>
+#include <QProcess>
 
 #include "Qats.h"
 #include "Test.h"
@@ -46,6 +47,8 @@ class QATS_EXPORT Server : public QLocalServer
 	Message* getFailedMessage() const;
 	void clear();
 	void executeTest( const QString& test );
+	bool startTestedApplication( const QString& command, const QStringList& arguments );
+	void closeTestedApplication();
 
   signals:
 	
@@ -61,6 +64,7 @@ class QATS_EXPORT Server : public QLocalServer
 	
 	void onNewConnection();
 	void onMessageReceived();
+	void onProcessFinished( int exitCode, QProcess::ExitStatus exitStatus );
 
   private:
 	
@@ -68,11 +72,14 @@ class QATS_EXPORT Server : public QLocalServer
 	~Server();
 
   protected:
+
+	void onFail( const QString& message, const QString& backtrace );
 	
 	QLocalSocket* _localSocket;
 	static Server* s_instance;
 	TestCase* _testCase;
 	Message* _failedMessage;
+	QProcess* _process;
 
 };
 

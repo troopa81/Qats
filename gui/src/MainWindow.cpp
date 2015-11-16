@@ -22,6 +22,7 @@
 
 #include <QStandardItemModel>
 #include <QFileDialog>
+#include <QSettings>
 
 #define METHOD_NAME Qt::UserRole + 2
 
@@ -56,6 +57,8 @@ MainWindow::MainWindow( QWidget* parent )
 
 	_outputModel = new QStandardItemModel( _ui->_output );
 	_ui->_output->setModel( _outputModel );
+
+	readSettings(); 
 }
 
 /*! 
@@ -210,6 +213,47 @@ void MainWindow::addBacktraceItems( QStandardItem* root, const QString& strBackt
 						 << new QStandardItem( QString::number( backtraceElt._lineNumber ) )
 						 << new QStandardItem( Test::getLineFromFile( fileInfo.absoluteFilePath(), backtraceElt._lineNumber ) ) );
 	}
+}
+
+/*! 
+  called whenever the startStop button is clicked. start or stop the current tested application
+  according to either it's started or not
+*/
+void MainWindow::on__startStopBtn_clicked()
+{
+	Server::get()->startTestedApplication( _ui->_testedApplicationCmb->currentText(), QStringList() ); 
+}
+
+void MainWindow::readSettings()
+{
+	QSettings settings;
+	int size = settings.beginReadArray( "testedApplications" );
+	for (int i = 0; i < size; ++i) 
+	{
+		settings.setArrayIndex(i);
+		_ui->_testedApplicationCmb->addItem( settings.value( "command" ).toString() );
+	}
+
+	settings.endArray();
+} 
+
+void MainWindow::writeSettings()
+{
+	QSettings settings;
+	settings.beginWriteArray( "testedApplications" );
+	for (int i = 0; i < _ui->_testedApplicationCmb->count(); ++i) 
+	{
+		settings.setArrayIndex(i);
+		settings.setValue( "command", _ui->_testedApplicationCmb->itemText( i ) );
+	}
+
+	settings.endArray();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+	writeSettings();
+	QMainWindow::closeEvent( event );
 }
 
 }

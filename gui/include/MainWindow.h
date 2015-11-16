@@ -50,12 +50,16 @@ protected slots:
 
 	void on__testCases_doubleClicked(const QModelIndex & index);
 	void on__loadScripts_clicked();
+	void on__startStopBtn_clicked();
 	void onOutputReceived();
 
 protected: 
 
 	QString getLineFromFile( const QString& filePath, int line ) const;
 	void addBacktraceItems( QStandardItem* root, const QString& strBacktrace ) const;
+	void closeEvent(QCloseEvent *event);
+	void readSettings();
+	void writeSettings();
 
 	Ui::MainWindow* _ui; 
 	QStandardItemModel*    _model;

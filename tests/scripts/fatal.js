@@ -20,52 +20,19 @@
 **
 ****************************************************************************/
 
-#ifndef QATS_MAINWINDOW_H
-#define QATS_MAINWINDOW_H
+var myTest = {
+    name: "FatalTests",
 
-#include <QMainWindow>
-#include <QStandardItemModel>
+    initTestCase: function() 
+	{
+	},
 
-#include <Qats.h>
+	fatalTest: function()
+	{
+		QatsToolBar.executeAction( "fatalAction" );
+	},
 
-class QAction; 
-
-namespace Ui
-{
-class TestMainWindow;
-}
-
-namespace qats
-{
-
-class QATS_EXPORT TestMainWindow : public QMainWindow
-{
-	Q_OBJECT
-
-  public:
-	// public operations
-	TestMainWindow( QWidget* parent = 0 );
-	virtual ~TestMainWindow();
-
-  protected slots:
-
-	  void on__openDialog_clicked();
-	  void on__treeWidgetCustomContextMenu_customContextMenuRequested( const QPoint& pos );
-	  void onActionTriggered();
-	  void onDialogActionTriggered();
-	  void onFatalActionTriggered();
-	
-  protected: 
-
-	  void initMenuActions();
-	  void mousePressEvent(QMouseEvent * event);
-
-	  Ui::TestMainWindow* _ui; 
-	  QAction* _testAction; 
-	  QAction* _testSubMenuAction;
-	  QAction* _dialogAction;
+	cleanupTestCase: function() {}
 };
 
-};
-
-#endif
+Qats.executeTestCase(myTest);

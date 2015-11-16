@@ -42,9 +42,7 @@ TestsTrigger::TestsTrigger( const QStringList& args, QObject* parent )
 {
 	connect( Server::get(), &Server::newConnection, this, &TestsTrigger::triggerTests );
 
-	// start tested application
-    _process = new QProcess( this );
-    _process->start(_scripts.takeFirst(), QStringList());
+	Server::get()->startTestedApplication( _scripts.takeFirst(), QStringList() );
 }
 
 /*!
@@ -69,8 +67,7 @@ void TestsTrigger::triggerTests()
 		loop.exec();
 	}
 
-	// close tested application
-	_process->close();
+	Server::get()->closeTestedApplication();
 
 	// finish, exit the application
 	QCoreApplication::exit();

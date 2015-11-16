@@ -66,6 +66,12 @@ TestMainWindow::TestMainWindow( QWidget* parent )
 	action->setObjectName( "toolBarAction" ); 
 	_ui->_toolBar->addAction( action );
 	connect( action, &QAction::triggered, this, &TestMainWindow::onActionTriggered );
+
+	// build tool bar action
+	action = new QAction( "Fatal Action", _ui->_toolBar );
+	action->setObjectName( "fatalAction" ); 
+	_ui->_toolBar->addAction( action );
+	connect( action, &QAction::triggered, this, &TestMainWindow::onFatalActionTriggered );
 }
 
 /*! 
@@ -173,6 +179,18 @@ void TestMainWindow::onDialogActionTriggered()
 void TestMainWindow::mousePressEvent(QMouseEvent * event)
 {
 	_ui->_testLabel->setText( QString( "%1 %2" ).arg( event->x() ).arg( event->y() ) );
+}
+
+/*! 
+  called whenever the fatal action has been triggered
+*/
+void TestMainWindow::onFatalActionTriggered()
+{
+	int i=1; 
+	int zero=0;
+	
+	// make the application crash
+	qDebug() << "fatal=" << (i/zero);
 }
 
 }
