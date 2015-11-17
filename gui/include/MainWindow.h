@@ -49,7 +49,7 @@ public:
 protected slots:
 
 	void on__testCases_doubleClicked(const QModelIndex & index);
-	void on__loadScripts_clicked();
+	void on__loadScriptDirAction_triggered();
 	void on__startStopBtn_clicked();
 	void onOutputReceived();
 
@@ -60,6 +60,9 @@ protected:
 	void closeEvent(QCloseEvent *event);
 	void readSettings();
 	void writeSettings();
+	void loadScriptDir( const QString& dir );
+	void onRecentScriptDirActionTriggered();
+	void addRecentScriptDir( const QString& dir, bool first = false );
 
 	Ui::MainWindow* _ui; 
 	QStandardItemModel*    _model;

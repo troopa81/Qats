@@ -94,16 +94,10 @@ void MainWindow::on__testCases_doubleClicked(const QModelIndex & index)
 }
 
 /*! 
-  called whenever select the load script button 
-*/
-void MainWindow::on__loadScripts_clicked()
+  load script directory \param dir
+*/ 
+void MainWindow::loadScriptDir( const QString& dir )
 {
-	QString dir = QFileDialog::getExistingDirectory( this, tr( "Open scripts directory") );
-	if ( dir.isEmpty() )
-	{
-		return;
-	}
-
 	// display script use case
 	QDir scriptDir( dir );
 	foreach( QString scriptFileName, scriptDir.entryList( QStringList() << "*.js" ) )
@@ -113,6 +107,34 @@ void MainWindow::on__loadScripts_clicked()
 		
 		_model->appendRow( item );
 	}
+}
+
+/*! 
+  called whenever select the load script action has been triggered 
+*/
+void MainWindow::on__loadScriptDirAction_triggered()
+{
+	QString dir = QFileDialog::getExistingDirectory( this, tr( "Open scripts directory") );
+	if ( dir.isEmpty() )
+	{
+		return;
+	}
+
+	loadScriptDir( dir );
+
+	// insert a new item on top in recent script directories action 
+	addRecentScriptDir( dir );
+}
+
+/*! 
+  called whenever a recent script dir action has been triggered
+*/
+void MainWindow::onRecentScriptDirActionTriggered()
+{
+	QAction* action = qobject_cast<QAction*>( sender() ); 
+	Q_ASSERT( action );
+
+	loadScriptDir( action->text() );
 }
 
 /*! 
@@ -224,9 +246,23 @@ void MainWindow::on__startStopBtn_clicked()
 	Server::get()->startTestedApplication( _ui->_testedApplicationCmb->currentText(), QStringList() ); 
 }
 
+/*!
+  read settings and initialize main window
+*/
 void MainWindow::readSettings()
 {
 	QSettings settings;
+
+	// recent directories
+	foreach( QString dir, settings.value( "recentScriptDirs" ).toStringList() )
+	{
+		if ( QDir( dir ).exists() )
+		{
+			addRecentScriptDir( dir );
+		}
+	}
+	
+	// tested application 
 	int size = settings.beginReadArray( "testedApplications" );
 	for (int i = 0; i < size; ++i) 
 	{
@@ -237,9 +273,22 @@ void MainWindow::readSettings()
 	settings.endArray();
 } 
 
+/*!
+  update settings according to current value from the main windowg
+*/
 void MainWindow::writeSettings()
 {
 	QSettings settings;
+	
+	// recent directories
+	QStringList recentDirs; 
+	foreach( QAction* action, _ui->_recentScriptDirsAction->menu()->actions() )
+	{
+		recentDirs.append( action->text() );
+	}
+	settings.setValue( "recentScriptDirs", recentDirs );
+
+	// tested application
 	settings.beginWriteArray( "testedApplications" );
 	for (int i = 0; i < _ui->_testedApplicationCmb->count(); ++i) 
 	{
@@ -250,10 +299,42 @@ void MainWindow::writeSettings()
 	settings.endArray();
 }
 
+/*! 
+  \overlaoded
+*/
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 	writeSettings();
 	QMainWindow::closeEvent( event );
+}
+
+/*! 
+  add recent script dir \param dir to open recent script dir action menu
+  \param first true if it has to be added before all other action
+*/
+void MainWindow::addRecentScriptDir( const QString& dir, bool first )
+{
+	// insert a new item on top in recent script directories action 
+	QMenu* menu = _ui->_recentScriptDirsAction->menu(); 
+	if ( !menu )
+	{
+		menu = new QMenu( this );
+		_ui->_recentScriptDirsAction->setMenu( menu );
+	}
+
+	QAction* action = new QAction( dir, this ); 
+	connect( action, &QAction::triggered, this, &MainWindow::onRecentScriptDirActionTriggered );
+
+	// check that dir doesn't already exists in the list
+	foreach( QAction* action, menu->actions() )
+	{
+		if ( action->text() == dir )
+		{
+			return; 
+		}
+	}
+
+	menu->insertAction( first && menu->actions().count() ? menu->actions().first() : 0, action ); 
 }
 
 }
