@@ -48,7 +48,9 @@ class QATS_EXPORT Server : public QLocalServer
 	void clear();
 	void executeTest( const QString& test );
 	bool startTestedApplication( const QString& command, const QStringList& arguments );
+	bool isStartedTestedApplication();
 	void closeTestedApplication();
+	int getTestedApplicationPid() const;
 
   signals:
 	
@@ -59,7 +61,8 @@ class QATS_EXPORT Server : public QLocalServer
 	void testFunctionPassed( TestFunction* testFunction );
 	void failMessageAdded( Message* message, TestFunction* testFunction );
 	void warnMessageAdded( Message* message, TestFunction* testFunction );
-			 
+	void testedApplicationFinished();
+
   protected slots:
 	
 	void onNewConnection();

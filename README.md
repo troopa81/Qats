@@ -70,3 +70,30 @@ qats::initialize();
 ```
 
 and that's it!
+
+## Debug tested application
+
+you can attach gdb to a running process with : 
+```shell 
+gdb attach <pid>
+```
+
+You can get process id <pid> directly from MainWindow where you select the application to be tested.
+
+When attaching gdb, if you get some error, you can try
+
+```shell 
+sudo echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
+```
+
+To permanently allow it edit /etc/sysctl.d/10-ptrace.conf and change the line:
+
+```
+kernel.yama.ptrace_scope = 1
+```
+
+With
+
+```
+kernel.yama.ptrace_scope = 0
+```

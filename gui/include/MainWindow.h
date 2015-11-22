@@ -52,6 +52,7 @@ protected slots:
 	void on__loadScriptDirAction_triggered();
 	void on__startStopBtn_clicked();
 	void onOutputReceived();
+	void onTestedApplicationFinished();
 
 protected: 
 

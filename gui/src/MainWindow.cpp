@@ -54,9 +54,12 @@ MainWindow::MainWindow( QWidget* parent )
 	_ui->_testCases->setEditTriggers( QAbstractItemView::NoEditTriggers );
 
 	connect( Server::get(), &Server::outputReceived, this, &MainWindow::onOutputReceived );
+	connect( Server::get(), &Server::testedApplicationFinished, this, &MainWindow::onTestedApplicationFinished );
 
 	_outputModel = new QStandardItemModel( _ui->_output );
 	_ui->_output->setModel( _outputModel );
+
+	_ui->_startStopBtn->setIcon( QIcon( "icons:start.svg" ) );
 
 	readSettings(); 
 }
@@ -243,7 +246,36 @@ void MainWindow::addBacktraceItems( QStandardItem* root, const QString& strBackt
 */
 void MainWindow::on__startStopBtn_clicked()
 {
-	Server::get()->startTestedApplication( _ui->_testedApplicationCmb->currentText(), QStringList() ); 
+	if ( Server::get()->isStartedTestedApplication() )
+	{
+		Server::get()->closeTestedApplication(); 
+	}
+	else
+	{
+		QString command = _ui->_testedApplicationCmb->currentText(); 
+		bool ok = Server::get()->startTestedApplication( command, QStringList() ); 
+
+		// add item to the combo box or move it to first place if already existing
+		if ( ok )
+		{
+			for( int i=0; i<_ui->_testedApplicationCmb->count(); i++ )
+			{
+				if ( command == _ui->_testedApplicationCmb->itemText( i ) )
+				{
+					_ui->_testedApplicationCmb->removeItem( i ); 
+					break; 
+				}
+			}
+
+			_ui->_testedApplicationCmb->insertItem( 0, command );
+		}
+
+		// update combo current text
+		_ui->_testedApplicationCmb->setCurrentText( QString( "%1 [%2]" ).arg( command ).arg( Server::get()->getTestedApplicationPid() ) );
+	}
+
+	_ui->_startStopBtn->setIcon( QIcon( Server::get()->isStartedTestedApplication() ? "icons:stop.svg" : "icons:start.svg" ) );
+	_ui->_testedApplicationCmb->setEnabled( !Server::get()->isStartedTestedApplication() );
 }
 
 /*!
@@ -328,6 +360,7 @@ void MainWindow::addRecentScriptDir( const QString& dir, bool first )
 	// check that dir doesn't already exists in the list
 	foreach( QAction* action, menu->actions() )
 	{
+		// TODO up action in the list instead of simply remove it 
 		if ( action->text() == dir )
 		{
 			return; 
@@ -335,6 +368,16 @@ void MainWindow::addRecentScriptDir( const QString& dir, bool first )
 	}
 
 	menu->insertAction( first && menu->actions().count() ? menu->actions().first() : 0, action ); 
+}
+
+/*! 
+  called whenever tested application has finished
+*/
+void MainWindow::onTestedApplicationFinished()
+{
+	_ui->_startStopBtn->setIcon( QIcon( "icons:start.svg" ) );
+	_ui->_testedApplicationCmb->setEnabled( true );
+	_ui->_testedApplicationCmb->setCurrentText( _ui->_testedApplicationCmb->count() ? _ui->_testedApplicationCmb->itemText( 0 ) : "" );
 }
 
 }

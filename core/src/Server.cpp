@@ -236,6 +236,7 @@ bool Server::startTestedApplication( const QString& command, const QStringList& 
 	if ( !_process->waitForStarted() )
 	{
 		qWarning() << tr( "Cannot start application : %1").arg( QString( _process->readAllStandardError() ) );
+		_process = 0;
 		return false;
 	}
 
@@ -249,7 +250,8 @@ void Server::closeTestedApplication()
 {
 	if ( _process )
 	{
-		delete _process; 
+		_process->kill();
+		_process->deleteLater(); 
 		_process = 0;
 	}
 }
@@ -267,6 +269,11 @@ void Server::onProcessFinished( int exitCode, QProcess::ExitStatus exitStatus )
 
 	// TODO manage backtrace correctly
 	onFail( "Fatal : application has quitted unexpectedly", "" /*Test::get()->getBacktrace()*/ );
+
+	delete _process; 
+	_process = 0;
+
+	emit testedApplicationFinished();
 }
 
 /*!
@@ -291,6 +298,22 @@ void Server::onFail( const QString& message, const QString& backtrace )
 
 	// TODO to be removed (still used in MainWindow for output display) 
 	emit outputReceived();
+}
+
+/*!
+  \return true if tested application is currently running
+*/
+bool Server::isStartedTestedApplication()
+{
+	return _process;
+}
+
+/*! 
+  \return tested application PID, -1 if there is no application running
+*/
+int Server::getTestedApplicationPid() const
+{
+	return _process ? _process->pid() : -1;
 }
 
 };
