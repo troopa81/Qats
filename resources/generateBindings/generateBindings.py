@@ -28,9 +28,9 @@ import re
 import os
 import subprocess
 import pprint
-
-sys.path = ["../"] + sys.path
 import CppHeaderParser
+
+# pprint.PrettyPrinter(depth=6).pprint( self.classInherits )
 
 def remove( content, startRe, endRe ):
     # BUG PARSER
@@ -54,6 +54,8 @@ class BindingGenerator:
         self.isAbstract = False
         self.classInherits = {}
         self.inherited = ""; 
+        self.notGeneratedMethods = { "QObject" : [ "connect", "disconnect", "connect_functor", "find_children", "find_child" ] }
+        self.notGeneratedClass = [ "QObjectData", "QObjectUserData", "QSignalBlocker", "QWidgetData" ]
 
     def findEnumFromValue( self, enumValueName ):
         for (className, enums) in self.globalEnums.iteritems():
@@ -72,17 +74,20 @@ class BindingGenerator:
 
         return (None,None)
 
-    def treatType( self, typeName, keepEnum ):
+    def treatType( self, typeName ):
+
 
         # BUG
         typeName = re.sub( r"__", r"::", typeName) 
 
+        if ( typeName == "ButtonRole" ):
+            print( "typeName=" + typeName  )
+            #pprint.PrettyPrinter(depth=6).pprint( self.globalEnums )
+
         enumClassName, enum = self.findEnum( typeName );
 
-    #    print("enumClassName="+ str(enumClassName) + " enum=" + str(enum) );
-
         if enumClassName != None and enum != None:
-            return (enumClassName + "::" + typeName) if keepEnum else "int" ;
+            return (enumClassName + "::" + typeName);
         elif typeName in self.cppClass[ 'typedefs' ][ 'public' ]:
             return self.cppClass['name'] + "::" + typeName
         else:
@@ -90,11 +95,11 @@ class BindingGenerator:
 
     # return true if current class inherits from QObject
     def inheritsQObject(self): 
-        parentClass = self.inherited; 
+        parentClass = self.cppClass[ 'name' ]; 
         while parentClass in self.classInherits:
             parentClass = self.classInherits[ parentClass ];
 
-        return self.cppClass[ 'name' ] == "QObject" or parentClass == "QObject"; 
+        return parentClass == "QObject"; 
 
     def generateScriptConstructor(self):
 
@@ -162,8 +167,8 @@ class BindingGenerator:
 
             self.cppClass = cppHeader.classes[ className ];
 
-            # TODO do this more cleanly...
-            if className in [ "QWidgetData" ]:
+            # Do not generate all classes...
+            if className in self.notGeneratedClass:
                 continue;
 
             protoClassName = className + "Prototype"
@@ -224,9 +229,8 @@ class BindingGenerator:
                     if self.inherited != "":
                         print( "Error : multiple inheritance, take first inherited class" );
                     else:
-                        self.inherited = inheritedClass['class'] + "Prototype";
-
-            self.classInherits[ className ] = self.inherited;
+                        self.inherited = inheritedClass['class'] + "Prototype"
+                        self.classInherits[ className ] = inheritedClass['class'];
 
             self.f.write("\n")
             self.f.write("#include <QObject>\n")
@@ -272,7 +276,8 @@ class BindingGenerator:
                 isStatic = method['static']
 
                 # do not treat constructor and destructor
-                if  method['constructor'] or method['destructor'] or method['name'].startswith( "operator" ):
+                notGeneratedMethods = self.notGeneratedMethods[ self.cppClass[ 'name' ] ] if self.cppClass['name'] in self.notGeneratedMethods else []
+                if method['constructor'] or method['destructor'] or method['name'].startswith( "operator" ) or method[ 'name' ] in notGeneratedMethods or '<' in method['name']:
                     continue
 
                 returnType = method['rtnType']
@@ -282,8 +287,7 @@ class BindingGenerator:
                     returnType = returnType[ returnType.find( "static") + 7:]
 
                 # compute return type
-                returnType = self.treatType( returnType, False )
-
+                returnType = self.treatType( returnType )
 
                 self.f.write(returnType + " " + method['name'] + "(" )
 
@@ -295,15 +299,10 @@ class BindingGenerator:
                     elif iParameter > 0 :
                         del parameters[ iParameter-1 ][ 'defaultValue' ]
 
-                parametersCast = []
                 for iParam in range(0, len(parameters)):
                     parameter = parameters[iParam]
 
-                    # compute parameter cast if needed
-                    enumClassName, enum = self.findEnum( parameter['type'] );
-                    parametersCast.append( enumClassName + "::" + enum['name'] if enumClassName != None and enum != None else None );
-
-                    paramType = self.treatType( parameter['type'], False )                
+                    paramType = self.treatType( parameter['type'] )                
 
                     # bug in parser
                     if ( parameter['name'] == "&" ):
@@ -322,7 +321,7 @@ class BindingGenerator:
                         if enumClassName != None and enum != None:
                             self.f.write( enumClassName + "::" + parameter['defaultValue'] );
                         else:
-                            self.f.write(self.treatType( parameter['defaultValue'], True ) )
+                            self.f.write(self.treatType( parameter['defaultValue'] ) )
 
                     if ( iParam < len(parameters)-1 ):
                         self.f.write(",")
@@ -346,12 +345,7 @@ class BindingGenerator:
                 # method parameters in call ...
                 for iParam in range(0, len(parameters)):
 
-                    if parametersCast[ iParam ] != None:
-                        self.f.write(parametersCast[ iParam ] + "(");
-
                     self.f.write(parameters[iParam]['name'])
-                    if parametersCast[ iParam ] != None:
-                        self.f.write(")");
 
                     if ( iParam < len(parameters)-1 ):
                         self.f.write(",")
@@ -376,26 +370,32 @@ class BindingGenerator:
 
 
 if len(sys.argv) != 3: 
-    print("[Usage] generateBindings <qt_dir> <output_dir>")
+    print("[Usage] generateBindings <qt_include_dir> <output_dir>")
     sys.exit(0)
 
 qtDir = sys.argv[1]
 outputDir = sys.argv[2]
 
+# assume output dir is created
+if not os.path.exists( outputDir ):
+    os.makedirs( outputDir )
+
 try:
 
     #"qtbase/src/corelib/kernel/qmetaobject.h"
     qtFiles = [ 
-      #          "qtbase/src/widgets/kernel/qwidget.h", 
+        "QtCore/qobject.h",
+        "QtWidgets/qwidget.h", 
+        "QtWidgets/qdialog.h",
+        "QtWidgets/qmessagebox.h"
       #          "qtbase/src/widgets/widgets/qlineedit.h",
       #          "qtbase/src/widgets/kernel/qapplication.h", 
       #          "qtbase/src/widgets/itemviews/qtreeview.h",
       #          "qtbase/src/widgets/itemviews/qabstractitemview.h",
       #          "qtbase/src/corelib/itemmodels/qabstractitemmodel.h",
- # "qtbase/src/corelib/kernel/qobject.h"
 #        "qtbase/src/widgets/widgets/qtoolbar.h"
 # "qtbase/src/corelib/tools/qrect.h"
- "qtbase/src/corelib/tools/qpoint.h"
+# "qtbase/src/corelib/tools/qpoint.h"
 #"qtbase/src/corelib/itemmodels/qitemselectionmodel.h"
 #"qtbase/src/widgets/widgets/qabstractscrollarea.h"
 #"qtbase/src/corelib/kernel/qcoreapplication.h"
@@ -411,8 +411,6 @@ try:
 #"qtbase/src/corelib/io/qiodevice.h",
 #"qtbase/src/corelib/io/qfiledevice.h",
 #"qtbase/src/corelib/io/qfile.h"
-#"qtbase/src/widgets/dialogs/qdialog.h",
-#"qtbase/src/widgets/dialogs/qmessagebox.h"
 #"qtbase/src/widgets/widgets/qabstractbutton.h"
     ]
 
@@ -422,9 +420,10 @@ try:
 
         sourceFileName = os.path.join( qtDir, qtFile )
         tmpPreprocessorFileName = "/tmp/tmpPreprocessorFile.h"
-        
+
         # generate file without include
-        subprocess.call(['/home/jcabieces/work/Qats/resources/prepareFile.sh', sourceFileName])
+        scriptDir = os.path.abspath(os.path.dirname(__file__)); 
+        subprocess.call([ os.path.join( scriptDir, 'prepareFile.sh' ), sourceFileName])
 
         sourceFile = open(tmpPreprocessorFileName,'r')
         sourceContent = sourceFile.read();

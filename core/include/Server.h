@@ -68,6 +68,7 @@ class QATS_EXPORT Server : public QLocalServer
 	void onNewConnection();
 	void onMessageReceived();
 	void onProcessFinished( int exitCode, QProcess::ExitStatus exitStatus );
+	void onProcessOutput();
 
   private:
 	

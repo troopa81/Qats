@@ -123,9 +123,6 @@ void Server::onMessageReceived()
 		{
 		case Test::WARN:
 			in >> message >> backtrace; 
-
-			qDebug() << "message" << message;
-
 			testFunction = _testCase ? _testCase->getCurrentTestFunction() : 0;
 			Q_ASSERT( testFunction ); 
 
@@ -231,6 +228,9 @@ bool Server::startTestedApplication( const QString& command, const QStringList& 
     _process = new QProcess( this );
 	connect( _process, SIGNAL( finished( int, QProcess::ExitStatus ) ), 
 			 this, SLOT( onProcessFinished( int, QProcess::ExitStatus ) ) );
+
+	connect( _process, &QProcess::readyReadStandardOutput, this, &Server::onProcessOutput ); 
+	connect( _process, &QProcess::readyReadStandardError, this, &Server::onProcessOutput ); 
 	
     _process->start( command, arguments );
 	if ( !_process->waitForStarted() )
@@ -314,6 +314,16 @@ bool Server::isStartedTestedApplication()
 int Server::getTestedApplicationPid() const
 {
 	return _process ? _process->pid() : -1;
+}
+
+/*! 
+  called whenever called process has standard or error output
+*/
+void Server::onProcessOutput()
+{
+	// TODO manage this better
+	qDebug() << _process->readAllStandardError(); 
+	qDebug() << _process->readAllStandardOutput(); 
 }
 
 };

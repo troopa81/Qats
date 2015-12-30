@@ -33,6 +33,7 @@
 
 inline QScriptValue scriptQMessageBoxConstructor(QScriptContext *context, QScriptEngine *engine)
 {
+Q_UNUSED(context);
 QMessageBox *object = new QMessageBox(0);
 return engine->newQObject(object, QScriptEngine::ScriptOwnership);
 }
@@ -58,20 +59,20 @@ engine->globalObject().setProperty("QMessageBox", metaObject);
 QMessageBoxPrototype(QObject* parent = 0):QDialogPrototype(parent){}
 public slots:
 
-void addButton(QAbstractButton * button,int role)
+void addButton(QAbstractButton * button,QMessageBox::ButtonRole role)
 {
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
-object->addButton(button,QMessageBox::ButtonRole(role));
+object->addButton(button,role);
 }
-QPushButton * addButton(const QString & text,int role)
+QPushButton * addButton(const QString & text,QMessageBox::ButtonRole role)
 {
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
-return object->addButton(text,QMessageBox::ButtonRole(role));
+return object->addButton(text,role);
 }
-QPushButton * addButton(int button)
+QPushButton * addButton(QMessageBox::StandardButton button)
 {
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
-return object->addButton(QMessageBox::StandardButton(button));
+return object->addButton(button);
 }
 void removeButton(QAbstractButton * button)
 {
@@ -88,30 +89,30 @@ QList<QAbstractButton *> buttons()
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
 return object->buttons();
 }
-int buttonRole(QAbstractButton * button)
+QMessageBox::ButtonRole buttonRole(QAbstractButton * button)
 {
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
 return object->buttonRole(button);
 }
-void setStandardButtons(int buttons)
+void setStandardButtons(QMessageBox::StandardButtons buttons)
 {
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
-object->setStandardButtons(QMessageBox::StandardButtons(buttons));
+object->setStandardButtons(buttons);
 }
-int standardButtons()
+QMessageBox::StandardButtons standardButtons()
 {
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
 return object->standardButtons();
 }
-int standardButton(QAbstractButton * button)
+QMessageBox::StandardButton standardButton(QAbstractButton * button)
 {
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
 return object->standardButton(button);
 }
-QAbstractButton * button(int which)
+QAbstractButton * button(QMessageBox::StandardButton which)
 {
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
-return object->button(QMessageBox::StandardButton(which));
+return object->button(which);
 }
 QPushButton * defaultButton()
 {
@@ -123,10 +124,10 @@ void setDefaultButton(QPushButton * button)
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
 object->setDefaultButton(button);
 }
-void setDefaultButton(int button)
+void setDefaultButton(QMessageBox::StandardButton button)
 {
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
-object->setDefaultButton(QMessageBox::StandardButton(button));
+object->setDefaultButton(button);
 }
 QAbstractButton * escapeButton()
 {
@@ -138,10 +139,10 @@ void setEscapeButton(QAbstractButton * button)
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
 object->setEscapeButton(button);
 }
-void setEscapeButton(int button)
+void setEscapeButton(QMessageBox::StandardButton button)
 {
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
-object->setEscapeButton(QMessageBox::StandardButton(button));
+object->setEscapeButton(button);
 }
 QAbstractButton * clickedButton()
 {
@@ -158,15 +159,15 @@ void setText(const QString & text)
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
 object->setText(text);
 }
-int icon()
+QMessageBox::Icon icon()
 {
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
 return object->icon();
 }
-void setIcon(int param0)
+void setIcon(QMessageBox::Icon param0)
 {
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
-object->setIcon(QMessageBox::Icon(param0));
+object->setIcon(param0);
 }
 QPixmap iconPixmap()
 {
@@ -208,6 +209,78 @@ QCheckBox * checkBox()
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
 return object->checkBox();
 }
+QMessageBox::StandardButton information(QWidget * parent,const QString & title,const QString & text,QMessageBox::StandardButtons buttons = QMessageBox::Ok,QMessageBox::StandardButton defaultButton = QMessageBox::NoButton)
+{
+return QMessageBox::information(parent,title,text,buttons,defaultButton);
+}
+QMessageBox::StandardButton question(QWidget * parent,const QString & title,const QString & text,QMessageBox::StandardButtons buttons = QMessageBox::StandardButtons(QMessageBox::Yes|QMessageBox::No),QMessageBox::StandardButton defaultButton = QMessageBox::NoButton)
+{
+return QMessageBox::question(parent,title,text,buttons,defaultButton);
+}
+QMessageBox::StandardButton warning(QWidget * parent,const QString & title,const QString & text,QMessageBox::StandardButtons buttons = QMessageBox::Ok,QMessageBox::StandardButton defaultButton = QMessageBox::NoButton)
+{
+return QMessageBox::warning(parent,title,text,buttons,defaultButton);
+}
+QMessageBox::StandardButton critical(QWidget * parent,const QString & title,const QString & text,QMessageBox::StandardButtons buttons = QMessageBox::Ok,QMessageBox::StandardButton defaultButton = QMessageBox::NoButton)
+{
+return QMessageBox::critical(parent,title,text,buttons,defaultButton);
+}
+void about(QWidget * parent,const QString & title,const QString & text)
+{
+QMessageBox::about(parent,title,text);
+}
+void aboutQt(QWidget * parent,const QString & title = QString())
+{
+QMessageBox::aboutQt(parent,title);
+}
+int information(QWidget * parent,const QString & title,const QString & text,int button0,int button1 = 0,int button2 = 0)
+{
+return QMessageBox::information(parent,title,text,button0,button1,button2);
+}
+int information(QWidget * parent,const QString & title,const QString & text,const QString & button0Text,const QString & button1Text = QString(),const QString & button2Text = QString(),int defaultButtonNumber = 0,int escapeButtonNumber = - 1)
+{
+return QMessageBox::information(parent,title,text,button0Text,button1Text,button2Text,defaultButtonNumber,escapeButtonNumber);
+}
+QMessageBox::StandardButton information(QWidget * parent,const QString & title,const QString & text,QMessageBox::StandardButton button0,QMessageBox::StandardButton button1 = QMessageBox::NoButton)
+{
+return QMessageBox::information(parent,title,text,button0,button1);
+}
+int question(QWidget * parent,const QString & title,const QString & text,int button0,int button1 = 0,int button2 = 0)
+{
+return QMessageBox::question(parent,title,text,button0,button1,button2);
+}
+int question(QWidget * parent,const QString & title,const QString & text,const QString & button0Text,const QString & button1Text = QString(),const QString & button2Text = QString(),int defaultButtonNumber = 0,int escapeButtonNumber = - 1)
+{
+return QMessageBox::question(parent,title,text,button0Text,button1Text,button2Text,defaultButtonNumber,escapeButtonNumber);
+}
+int question(QWidget * parent,const QString & title,const QString & text,QMessageBox::StandardButton button0,QMessageBox::StandardButton button1)
+{
+return QMessageBox::question(parent,title,text,button0,button1);
+}
+int warning(QWidget * parent,const QString & title,const QString & text,int button0,int button1,int button2 = 0)
+{
+return QMessageBox::warning(parent,title,text,button0,button1,button2);
+}
+int warning(QWidget * parent,const QString & title,const QString & text,const QString & button0Text,const QString & button1Text = QString(),const QString & button2Text = QString(),int defaultButtonNumber = 0,int escapeButtonNumber = - 1)
+{
+return QMessageBox::warning(parent,title,text,button0Text,button1Text,button2Text,defaultButtonNumber,escapeButtonNumber);
+}
+int warning(QWidget * parent,const QString & title,const QString & text,QMessageBox::StandardButton button0,QMessageBox::StandardButton button1)
+{
+return QMessageBox::warning(parent,title,text,button0,button1);
+}
+int critical(QWidget * parent,const QString & title,const QString & text,int button0,int button1,int button2 = 0)
+{
+return QMessageBox::critical(parent,title,text,button0,button1,button2);
+}
+int critical(QWidget * parent,const QString & title,const QString & text,const QString & button0Text,const QString & button1Text = QString(),const QString & button2Text = QString(),int defaultButtonNumber = 0,int escapeButtonNumber = - 1)
+{
+return QMessageBox::critical(parent,title,text,button0Text,button1Text,button2Text,defaultButtonNumber,escapeButtonNumber);
+}
+int critical(QWidget * parent,const QString & title,const QString & text,QMessageBox::StandardButton button0,QMessageBox::StandardButton button1)
+{
+return QMessageBox::critical(parent,title,text,button0,button1);
+}
 QString buttonText(int button)
 {
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
@@ -248,9 +321,9 @@ void setWindowModality(Qt::WindowModality windowModality)
 QMessageBox *object = qscriptvalue_cast<QMessageBox*>(thisObject());
 object->setWindowModality(windowModality);
 }
-QPixmap standardIcon(int icon)
+QPixmap standardIcon(QMessageBox::Icon icon)
 {
-return QMessageBox::standardIcon(QMessageBox::Icon(icon));
+return QMessageBox::standardIcon(icon);
 }
 void buttonClicked(QAbstractButton * button)
 {
