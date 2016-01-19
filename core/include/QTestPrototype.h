@@ -60,6 +60,11 @@ public slots:
 		QTest::keyClick( widget, key, modifier, delay );
 	}
 
+	void keyPress(QWidget * widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay = -1)
+	{
+		QTest::keyPress( widget, key, modifier, delay );
+	}
+
 	void mouseMove(QWidget * widget, QPoint pos = QPoint(), int delay = -1)
 	{
 		QTest::mouseMove( widget, pos, delay );

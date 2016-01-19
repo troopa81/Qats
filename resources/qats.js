@@ -893,3 +893,54 @@ Qats.mouseClick = function( widget, button, modifier, x, y )
 
 	QTest.mouseClick( widget, Qt.LeftButton, Qt.ControlModifier, pt );
 }
+
+/*!
+  type data inside an item view
+  \param itemView could be either an objet that extend QAbstractItemView or the item view object name
+  \param row index row 
+  \param column index column
+  \param data data to be typed
+*/
+QatsItemView.typeData = function( itemView, row, column, data )
+{
+	// get item view
+	qVerify( itemView, "Parameter 'itemView' is null" );
+	itemView = typeof itemView === 'string' ? Qats.findGuiObject( itemView ) : itemView;
+	qVerify( itemView, "Cannot find widget '" + itemView + "' in main window" );
+	qVerify( itemView.inherits( "QAbstractItemView" ), "widget '" + itemView + "' is not an item view" );
+
+	// check parameters
+	qVerify( row != null, "bad parameter 'row'" ); 
+	qVerify( column != null, "bad parameter 'column'" ); 
+	qVerify( data != null, "bad parameter 'data'" ); 
+	
+	// edit row/col cell
+	var model = itemView.model();
+	qVerify( model, "missing model for itemView '" + itemView.objectName + "'" );
+	
+	var index = model.index( row, column );
+	qVerify( index, "index (" + row + "," + column + ") is null" ); 
+	qVerify( index.isValid(), "index (" + row + "," + column + ") is invalid"  ); 
+	
+	var rect = itemView.visualRect( index );
+	qVerify( rect.isValid(), "index visual rect is invalid"  );
+
+	// one first click, just to be sure that viewport as the focus
+	QTest.mouseClick( itemView.viewport(), Qt.LeftButton, Qt.NoModifier, rect.center() );
+
+	// an other click to edit
+	QTest.mouseDClick( itemView.viewport(), Qt.LeftButton, Qt.NoModifier, rect.center() );
+
+	// get widget use to edit value (wait for it!)
+	var editWidget = itemView.indexWidget( index );
+	Qats.waitFor( function(){ return itemView.indexWidget( index ) } );
+
+	qVerify( editWidget, "Cannot find widget for cell edition" );
+
+	// type new content
+	// TODO manage different widgets and also custom widget with a given js method to edit
+	QTest.keyClicks( editWidget, String( data ) );
+
+	// finish editing : use keyPress and not keyClick because it crashes the application
+	QTest.keyPress( editWidget, Qt.Key_Enter );
+}
