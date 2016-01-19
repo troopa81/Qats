@@ -88,6 +88,31 @@ QScriptValue qTimerConstructor(QScriptContext *context,
     return engine->newQObject(timer, QScriptEngine::ScriptOwnership);
 }
 
+#define TO_FROM_METHODS(ns, eName)										\
+	QScriptValue ns_eName_toScriptValue(QScriptEngine *engine,			\
+										const ns::eName &f)				\
+	{																	\
+		QScriptValue obj = engine->newObject();							\
+		obj.setProperty("val", (int)f);									\
+		return obj;														\
+	}																	\
+																		\
+	void ns_eName_fromScriptValue(const QScriptValue &obj,				\
+								  ns::eName &f)							\
+	{																	\
+		f = ns::eName( obj.toVariant().toInt() );						\
+	}																	
+
+#define REGISTER_ENUM( ns, eName)										\
+	qScriptRegisterMetaType<ns::eName>( _scriptEngine,					\
+										ns_eName_toScriptValue,			\
+										ns_eName_fromScriptValue );		\
+
+Q_DECLARE_METATYPE(QMessageBox::StandardButton)
+	
+TO_FROM_METHODS(Qt,MatchFlags)
+TO_FROM_METHODS(QMessageBox,StandardButton)
+
 namespace qats
 {
 
@@ -136,10 +161,8 @@ int Test::executeTest(const QString& scriptFilePath, int delay )
 	// TODO register only one somewhere...
 	qRegisterMetaType<int>("Qt::MouseButton");
 	qRegisterMetaType<int>("Qt::Key");
-	qRegisterMetaType<int>("QMessageBox::StandardButton");
 	qRegisterMetaType<int>("Qt::KeyboardModifiers");
 	qRegisterMetaType<int>("QEventLoop::ProcessEventsFlag");
-	qRegisterMetaType<Qt::MatchFlags>("Qt::MatchFlags");
 	
 	qRegisterMetaType< QWidgetList >("QWidgetList");
 	qRegisterMetaType< QObjectList >("QObjectList");
@@ -147,7 +170,10 @@ int Test::executeTest(const QString& scriptFilePath, int delay )
 	qRegisterMetaType< QModelIndexList >("QModelIndexList");
 
 	_scriptEngine = new QScriptEngine();
-
+	
+	REGISTER_ENUM( Qt, MatchFlags );
+	REGISTER_ENUM( QMessageBox, StandardButton );
+	
 	QIODevicePrototype::registerToScriptEngine( _scriptEngine );
 	QFileDevicePrototype::registerToScriptEngine( _scriptEngine );
 	QFilePrototype::registerToScriptEngine( _scriptEngine );

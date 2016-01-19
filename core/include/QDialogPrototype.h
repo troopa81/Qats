@@ -33,6 +33,7 @@
 
 inline QScriptValue scriptQDialogConstructor(QScriptContext *context, QScriptEngine *engine)
 {
+	Q_UNUSED(context);
 QDialog *object = new QDialog(0);
 return engine->newQObject(object, QScriptEngine::ScriptOwnership);
 }

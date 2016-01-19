@@ -61,6 +61,25 @@ function qCompareFile(file1, file2)
 	qVerify( f1.readAll() == f2.readAll(), "'" + file1 + "' and '" + file2 + "' are different" );
 }
 
+Qats.printObject = function (object)
+{
+	var str = "printObject ";
+	if ( object == undefined )
+	{
+		str += "undefined"; 
+	}
+	else
+	{
+		str += object + " : ";
+		for (property in object) 
+		{
+			str += property + ",";
+		}
+	}
+
+	qWarn( str );
+}
+
 Qats.executeTestCase = function(testcase) {
 
 	Qats.sendMessage( TestEnums.TESTCASE_START, [ testcase['name'] ] );
@@ -172,25 +191,6 @@ Qats._executeTestFunction = function(testcase, fn) {
     }
     return passed;
 };
-
-Qats.printObject = function (object)
-{
-	var str = "printObject ";
-	if ( object == undefined )
-	{
-		str += "undefined"; 
-	}
-	else
-	{
-		str += object + " : ";
-		for (property in object) 
-		{
-			str += property + ",";
-		}
-	}
-
-	qWarn( str );
-}
 
 Qats.mouseTClick = function( widget, button )
 {

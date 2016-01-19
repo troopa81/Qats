@@ -28,32 +28,19 @@
 #include <QScriptValue>
 #include <QScriptEngine>
 #include <QAbstractItemModel>
+#include "Test.h"
 
 namespace qats
 {
 
-class QAbstractItemModelPrototype : public QObject, public QScriptable
+class QAbstractItemModelPrototype : public QObjectPrototype
 {
 Q_OBJECT
 
 public:
 
-QAbstractItemModelPrototype(QObject* parent = 0):QObject(parent){}
+QAbstractItemModelPrototype(QObject* parent = 0):QObjectPrototype(parent){}
 public slots:
-
-// TODO : not 'const' because compilation bug. Don't understand why
-QMetaObject* metaObject()
-{
-QAbstractItemModel *object = qscriptvalue_cast<QAbstractItemModel*>(thisObject());
-return const_cast<QMetaObject*>( object->metaObject() );
-}
-
-// TODO : not 'const' because compilation bug. Don't understand why
-bool inherits( QString className )
-{
-QAbstractItemModel *object = qscriptvalue_cast<QAbstractItemModel*>(thisObject());
-return object->inherits( qPrintable( className ) );
-}
 
 bool hasIndex(int row,int column,const QModelIndex & parent = QModelIndex())
 {
@@ -235,12 +222,10 @@ QModelIndex buddy(const QModelIndex & index)
 QAbstractItemModel *object = qscriptvalue_cast<QAbstractItemModel*>(thisObject());
 return object->buddy(index);
 }
-
-
-QModelIndexList match(const QModelIndex & start,int role,const QVariant & value,int hits = 1,int flags = Qt::MatchFlags(Qt::MatchStartsWith|Qt::MatchWrap))
+QModelIndexList match(const QModelIndex & start,int role,const QVariant & value,int hits, Qt::MatchFlags flags)
 {
 QAbstractItemModel *object = qscriptvalue_cast<QAbstractItemModel*>(thisObject());
-return object->match(start,role,value,hits,Qt::MatchFlags(flags));
+return object->match(start,role,value,hits,flags);
 }
 
 QSize span(const QModelIndex & index)
