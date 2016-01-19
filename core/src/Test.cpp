@@ -109,6 +109,7 @@ QScriptValue qTimerConstructor(QScriptContext *context,
 										ns_eName_fromScriptValue );		\
 
 Q_DECLARE_METATYPE(QMessageBox::StandardButton)
+Q_DECLARE_METATYPE(Qt::MatchFlags)
 	
 TO_FROM_METHODS(Qt,MatchFlags)
 TO_FROM_METHODS(QMessageBox,StandardButton)
