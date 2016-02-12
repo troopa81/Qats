@@ -229,8 +229,8 @@ bool Server::startTestedApplication( const QString& command, const QStringList& 
 	connect( _process, SIGNAL( finished( int, QProcess::ExitStatus ) ), 
 			 this, SLOT( onProcessFinished( int, QProcess::ExitStatus ) ) );
 
-	connect( _process, &QProcess::readyReadStandardOutput, this, &Server::onProcessOutput ); 
-	connect( _process, &QProcess::readyReadStandardError, this, &Server::onProcessOutput ); 
+//	connect( _process, &QProcess::readyReadStandardOutput, this, &Server::onProcessOutput ); 
+//	connect( _process, &QProcess::readyReadStandardError, this, &Server::onProcessOutput ); 
 	
     _process->start( command, arguments );
 	if ( !_process->waitForStarted() )
