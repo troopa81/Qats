@@ -895,6 +895,21 @@ Qats.mouseClick = function( widget, button, modifier, x, y )
 }
 
 /*!
+  Move mouse to \param x, \param y position inside \param widget
+*/
+Qats.mouseMove = function( widget, x, y )
+{
+	qVerify( widget );
+	widget = typeof widget === 'string' ? Qats.findGuiObject( widget ) : widget;
+
+	var pt = new QPoint(); 
+	pt.setX( x ); 
+	pt.setY( y );
+
+	QTest.mouseMove( widget, pt, 1000 );
+}
+
+/*!
   type data inside an item view
   \param itemView could be either an objet that extend QAbstractItemView or the item view object name
   \param row index row 
@@ -943,4 +958,56 @@ QatsItemView.typeData = function( itemView, row, column, data )
 
 	// finish editing : use keyPress and not keyClick because it crashes the application
 	QTest.keyPress( editWidget, Qt.Key_Enter );
+}
+
+QatsSlider = {}
+
+QatsSlider.changeValue = function( slider, value )
+{
+	// get item view
+	qVerify( slider, "Parameter 'slider' is null" );
+	slider = typeof slider === 'string' ? Qats.findGuiObject( slider ) : slider;
+	qVerify( slider, "Cannot find widget '" + slider + "' in main window" );
+	qVerify( slider.inherits( "QSlider" ), "widget '" + slider + "' is not a slider" );
+
+	// check parameter
+	qVerify( typeof value === 'number', "'value' parameter must be a number" );
+	qVerify( value >= slider.minimum && value <= slider.maximum, "value must be inside '" + slider.minimum + "' and '" + slider.maximum + "'" );
+
+	// compute old and new cursor pos
+	var contentsRect = slider.contentsRect(); 
+	qVerify( contentsRect.isValid(), "contents rectangle is invalid" );
+
+	var valueToPixel = function( value ){ return ( ( value - slider.minimum ) * contentsRect.width() ) / ( slider.maximum - slider.minimum ) - 5; };
+
+	var cursorPos = valueToPixel( slider.value );
+	var newCursorPos = valueToPixel( value );
+	var y = contentsRect.center().y(); 
+
+	// drag cursor
+	
+	Qats.mouseMove( slider, contentsRect.center().x(), y );
+
+/*
+	while ( slider.value != value )
+	{
+		QTest.keyClick( slider, slider.value > value  ? Qt.Key_Left : Qt.Key_Right );
+	}
+*/
+
+	QTest.mousePress( slider, Qt.LeftButton, Qt.NoModifier, cursorPos, y );
+
+	qWarn( "cursorPos=" + cursorPos + "newCursorPos=" + newCursorPos )
+
+
+	while ( cursorPos - newCursorPos < 1 )
+	{
+		qWarn( "cursorPos=" + cursorPos + "newCursorPos=" + newCursorPos )
+		cursorPos = newCursorPos > cursorPos ? cursorPos + 1 : cursorPos - 1;
+		Qats.mouseMove( slider, cursorPos, y );
+	}
+
+	Qats.mouseMove( slider, newCursorPos, y );
+//	QTest.mouseRelease( slider, Qt.LeftButton, Qt.NoModifier, newCursorPos, y );
+
 }

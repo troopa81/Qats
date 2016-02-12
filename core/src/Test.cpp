@@ -76,6 +76,8 @@
 #include "QDialogPrototype.h"
 #include "QAbstractButtonPrototype.h"
 #include "QPointPrototype.h"
+#include "QAbstractSliderPrototype.h"
+#include "QSliderPrototype.h"
 
 // #include "QElapsedTimerPrototype.h"
 //#include "QContextMenuEventPrototype.h"
@@ -182,6 +184,8 @@ int Test::executeTest(const QString& scriptFilePath, int delay )
 	QDialogPrototype::registerToScriptEngine( _scriptEngine );
 	QAbstractButtonPrototype::registerToScriptEngine( _scriptEngine );
 	QPointPrototype::registerToScriptEngine( _scriptEngine );
+	QAbstractSliderPrototype::registerToScriptEngine( _scriptEngine );
+	QSliderPrototype::registerToScriptEngine( _scriptEngine );
 	
 	qScriptRegisterSequenceMetaType< QWidgetList >(_scriptEngine);
 	qScriptRegisterSequenceMetaType< QObjectList >(_scriptEngine);

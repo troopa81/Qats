@@ -54,7 +54,7 @@ public slots:
 	{
 		QApplication::instance()->postEvent( widget, new QContextMenuEvent( QContextMenuEvent::Mouse, pos ) );
 	}
-
+	
 	void keyClick(QWidget * widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay = -1)
 	{
 		QTest::keyClick( widget, key, modifier, delay );
@@ -78,6 +78,16 @@ public slots:
 	void mouseDClick(QWidget * widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier = 0, QPoint pos = QPoint(), int delay = -1)
 	{
 		QTest::mouseDClick( widget, button, modifier, pos, delay );
+	}
+
+	void mousePress(QWidget * widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier = 0, QPoint pos = QPoint(), int delay = -1)
+	{
+		QTest::mousePress( widget, button, modifier, pos, delay );
+	}
+
+	void mouseRelease(QWidget * widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier = 0, QPoint pos = QPoint(), int delay = -1)
+	{
+		QTest::mouseRelease( widget, button, modifier, pos, delay );
 	}
 
 	void keyClicks(QWidget * widget, const QString & sequence, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay = -1)

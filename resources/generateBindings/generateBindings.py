@@ -386,8 +386,10 @@ try:
     qtFiles = [ 
         "QtCore/qobject.h",
         "QtWidgets/qwidget.h", 
-        "QtWidgets/qdialog.h",
-        "QtWidgets/qmessagebox.h"
+#        "QtWidgets/qdialog.h",
+#        "QtWidgets/qmessagebox.h"
+        "QtWidgets/qabstractslider.h", 
+        "QtWidgets/qslider.h", 
       #          "qtbase/src/widgets/widgets/qlineedit.h",
       #          "qtbase/src/widgets/kernel/qapplication.h", 
       #          "qtbase/src/widgets/itemviews/qtreeview.h",
