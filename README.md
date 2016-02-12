@@ -1,4 +1,7 @@
 # Qats
+
+![alt tag](http://github.com/troopa81/Qats/blob/master/resources/icons/qats.png)
+
 Qt Automated Test Scripting
 
 Qats is an application designed to execute javascript tests inside a Qt 
