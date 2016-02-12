@@ -1,6 +1,6 @@
-# Qats
+![alt tag](https://github.com/troopa81/Qats/blob/master/resources/icons/qats.png) 
 
-![alt tag](http://github.com/troopa81/Qats/blob/master/resources/icons/qats.png)
+# Qats  
 
 Qt Automated Test Scripting
 
