@@ -2,6 +2,8 @@
 
 # Qats  
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/19cc7969f2c9462eb199d9f5f5878976)](https://www.codacy.com/app/troopa81/Qats?utm_source=github.com&utm_medium=referral&utm_content=troopa81/Qats&utm_campaign=badger)
+
 Qt Automated Test Scripting
 
 Qats is an application designed to execute javascript tests inside a Qt 
